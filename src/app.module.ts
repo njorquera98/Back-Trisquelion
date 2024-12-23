@@ -5,6 +5,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PacientesModule } from './pacientes/pacientes.module';
 import { SesionesModule } from './sesiones/sesiones.module';
+import { UsuarioModule } from './usuario/usuario.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -27,6 +29,8 @@ import { SesionesModule } from './sesiones/sesiones.module';
   }),
     PacientesModule,
     SesionesModule,
+    UsuarioModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

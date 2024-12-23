@@ -1,0 +1,9 @@
+PATCH http://localhost:3000/usuario/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAY29ycmVvLmNvbSIsInN1YiI6MSwiaWF0IjoxNzM0OTIyMDg4LCJleHAiOjE3MzQ5MjU2ODh9.4wXNuTDUzWMpmIhdhJZKP55GlOcBpuqox7BNZmkrDHM
+Content-Type: application/json
+
+{
+  "email": "test@trisquelion.com",
+  "password": "123456"
+}
+
