@@ -8,13 +8,7 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() authDto: AuthDto) {
-    console.log('Login endpoint hit');  // Verifica si se llega aquí
     return this.authService.login(authDto);
-  }
-
-  @Get('test')
-  testRoute() {
-    return { message: 'Auth route is working' };
   }
 }
 
