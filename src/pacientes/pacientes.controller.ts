@@ -22,6 +22,11 @@ export class PacientesController {
     return this.pacientesService.findOne(id);
   }
 
+  @Get('activos')
+  findActivos() {
+    return this.pacientesService.findActivos();
+  }
+
   @Patch(':id')
   update(@Param('id') id: number, @Body() updatePacienteDto: UpdatePacienteDto) {
     return this.pacientesService.update(id, updatePacienteDto);

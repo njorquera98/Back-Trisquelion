@@ -26,6 +26,8 @@ export class Paciente {
   @Column()
   prevision: string;
 
+  @Column({ default: true })
+  activo: boolean;
   /*
   //Nueva tabla?
   @Column()

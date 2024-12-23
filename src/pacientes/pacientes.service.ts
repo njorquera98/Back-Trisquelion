@@ -24,6 +24,10 @@ export class PacientesService {
     return this.pacientesRepository.findOneBy({ paciente_id });
   }
 
+  async findActivos(): Promise<Paciente[]> {
+    return this.pacientesRepository.find({ where: { activo: true } });
+  }
+
   update(id: number, updatePacienteDto: UpdatePacienteDto) {
     return this.pacientesRepository.update(id, updatePacienteDto)
   }
