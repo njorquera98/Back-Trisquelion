@@ -13,10 +13,18 @@ export class PacientesService {
   ) { }
 
   create(createPacienteDto: CreatePacienteDto) {
-    return this.pacientesRepository.save(createPacienteDto)
+    return this.pacientesRepository.save(createPacienteDto);
   }
 
-  findAll() {
+  // Modificación de la función findAll para que acepte un parámetro de filtro 'activo'
+  findAll(activo?: boolean) {
+    // Si 'activo' está definido, filtramos pacientes según su estado
+    if (activo !== undefined) {
+      return this.pacientesRepository.find({
+        where: { activo } // Filtra según el valor de 'activo' (true o false)
+      });
+    }
+    // Si no se pasa 'activo', retorna todos los pacientes sin filtro
     return this.pacientesRepository.find();
   }
 
@@ -24,15 +32,12 @@ export class PacientesService {
     return this.pacientesRepository.findOneBy({ paciente_id });
   }
 
-  async findActivos(): Promise<Paciente[]> {
-    return this.pacientesRepository.find({ where: { activo: true } });
-  }
-
   update(id: number, updatePacienteDto: UpdatePacienteDto) {
-    return this.pacientesRepository.update(id, updatePacienteDto)
+    return this.pacientesRepository.update(id, updatePacienteDto);
   }
 
   remove(id: number) {
     return `This action removes a #${id} paciente`;
   }
 }
+

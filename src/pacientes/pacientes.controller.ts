@@ -12,19 +12,27 @@ export class PacientesController {
     return this.pacientesService.create(createPacienteDto);
   }
 
+  // Obtener todos los pacientes
   @Get()
   findAll() {
     return this.pacientesService.findAll();
   }
 
+  // Obtener pacientes activos
+  @Get('activos')
+  findActivos() {
+    return this.pacientesService.findAll(true); // Filtra pacientes activos
+  }
+
+  // Obtener pacientes inactivos
+  @Get('inactivos')
+  findInactivos() {
+    return this.pacientesService.findAll(false); // Filtra pacientes inactivos
+  }
+
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.pacientesService.findOne(id);
-  }
-
-  @Get('activos')
-  findActivos() {
-    return this.pacientesService.findActivos();
   }
 
   @Patch(':id')
@@ -37,3 +45,4 @@ export class PacientesController {
     return this.pacientesService.remove(id);
   }
 }
+
