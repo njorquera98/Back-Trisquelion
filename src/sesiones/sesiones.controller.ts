@@ -22,6 +22,11 @@ export class SesionesController {
     return this.sesionesService.findAll();
   }
 
+  @Get('paciente/:pacienteId')
+  async findByPacienteId(@Param('pacienteId') pacienteId: number): Promise<Sesion[]> {
+    return this.sesionesService.findByPacienteId(pacienteId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.sesionesService.findOne(+id);

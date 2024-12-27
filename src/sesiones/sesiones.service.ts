@@ -6,8 +6,6 @@ import { Sesion } from './entities/sesion.entity';
 import { Repository } from 'typeorm';
 import { Paciente } from 'src/pacientes/entities/paciente.entity';
 
-
-
 @Injectable()
 export class SesionesService {
   constructor(
@@ -38,6 +36,19 @@ export class SesionesService {
 
   findOne(sesion_id: number) {
     return this.sesionesRepository.findOneBy({ sesion_id });
+  }
+
+  async findByPacienteId(pacienteId: number): Promise<Sesion[]> {
+    const paciente = await this.pacientesRepository.findOneBy({ paciente_id: pacienteId });
+
+    if (!paciente) {
+      throw new NotFoundException(`Paciente con ID ${pacienteId} no encontrado`);
+    }
+
+    return this.sesionesRepository.find({
+      where: { paciente: { paciente_id: pacienteId } },
+      relations: ['paciente'], // Opcional: para incluir los detalles del paciente si es necesario
+    });
   }
 
   update(sesion_id: number, updateSesionDto: UpdateSesionDto) {
