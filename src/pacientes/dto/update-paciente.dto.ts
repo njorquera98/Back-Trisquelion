@@ -26,5 +26,15 @@ export class UpdatePacienteDto extends PartialType(CreatePacienteDto) {
   @IsString()
   @IsOptional()
   @MinLength(1)
+  domicilio?: string;
+
+  @IsString()
+  @IsOptional()
+  @MinLength(1)
   fecha_nacimiento?: Date;
+
+  @IsString()
+  @IsOptional()
+  @MinLength(1)
+  prevision?: string;
 }

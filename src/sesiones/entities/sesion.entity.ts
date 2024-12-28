@@ -1,3 +1,4 @@
+import { Bono } from "src/bonos/entities/bono.entity";
 import { Paciente } from "src/pacientes/entities/paciente.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
@@ -26,4 +27,8 @@ export class Sesion {
   @ManyToOne(() => Paciente, paciente => paciente.sesiones)
   @JoinColumn({ name: 'paciente_fk' })
   paciente: Paciente;
+
+  @ManyToOne(() => Bono, bono => bono.sesiones)  // Relación con Bono (uno a muchos desde Bono)
+  @JoinColumn({ name: 'bono_fk' })  // La columna que almacenará la referencia al bono
+  bono: Bono;
 }

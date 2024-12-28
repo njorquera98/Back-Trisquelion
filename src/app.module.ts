@@ -7,6 +7,7 @@ import { PacientesModule } from './pacientes/pacientes.module';
 import { SesionesModule } from './sesiones/sesiones.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { AuthModule } from './auth/auth.module';
+import { BonosModule } from './bonos/bonos.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -31,6 +32,7 @@ import { AuthModule } from './auth/auth.module';
     SesionesModule,
     UsuarioModule,
     AuthModule,
+    BonosModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -17,16 +17,29 @@ export class SesionesService {
   ) { }
 
   async create(pacienteId: number, sesionData: Partial<Sesion>): Promise<Sesion> {
+    // Verificar que el paciente existe
     const paciente = await this.pacientesRepository.findOneBy({ paciente_id: pacienteId });
-
     if (!paciente) {
       throw new NotFoundException(`Paciente con ID ${pacienteId} no encontrado`);
     }
 
+    // Obtener el último número de sesión del paciente
+    const lastSesion = await this.sesionesRepository.findOne({
+      where: { paciente: { paciente_id: pacienteId } },
+      order: { n_de_sesion: 'DESC' }, // Ordenar por número de sesión descendente
+    });
+
+    // Calcular el siguiente número de sesión
+    const nextNSesion = lastSesion ? lastSesion.n_de_sesion + 1 : 1;
+
+    // Crear la nueva sesión
     const nuevaSesion = this.sesionesRepository.create({
       ...sesionData,
+      n_de_sesion: nextNSesion,
       paciente,
     });
+
+    // Guardar y devolver la nueva sesión
     return this.sesionesRepository.save(nuevaSesion);
   }
 

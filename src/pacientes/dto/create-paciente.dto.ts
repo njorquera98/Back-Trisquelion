@@ -12,8 +12,10 @@ export class CreatePacienteDto {
   telefono: string;
 
   @IsString()
-  @IsOptional()
   correo: string;
+
+  @IsString()
+  domicilio: string;
 
   @IsDateString()
   fecha_nacimiento: Date;

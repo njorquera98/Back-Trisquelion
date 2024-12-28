@@ -13,9 +13,27 @@ export class SesionesController {
     @Param('pacienteId') pacienteId: number,
     @Body() sesionData: Partial<Sesion>,
   ): Promise<Sesion> {
+    // Obtener el último número de sesión del paciente
+    const sesionesPaciente = await this.sesionesService.findByPacienteId(pacienteId);
 
-    return this.sesionesService.create(pacienteId, sesionData);
+    // Obtener el último número de sesión o asignar 1 si no tiene sesiones previas
+    const ultimoNumeroSesion = sesionesPaciente.length > 0
+      ? Math.max(...sesionesPaciente.map(s => s.n_de_sesion))
+      : 0;
+
+    // Calcular el siguiente número de sesión
+    const siguienteNumeroSesion = ultimoNumeroSesion + 1;
+
+    // Asignar el siguiente número de sesión al nuevo objeto de sesión
+    const nuevaSesionData = {
+      ...sesionData,
+      n_de_sesion: siguienteNumeroSesion,
+    };
+
+    // Crear la sesión con el siguiente número de sesión
+    return this.sesionesService.create(pacienteId, nuevaSesionData);
   }
+
 
   @Get()
   findAll() {
