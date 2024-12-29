@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
 import { BonosService } from './bonos.service';
 import { CreateBonoDto } from './dto/create-bono.dto';
-import { UpdateBonoDto } from './dto/update-bono.dto';
 import { Bono } from './entities/bono.entity';
 
 @Controller('bonos')
@@ -20,7 +19,11 @@ export class BonosController {
 
   @Get(':id')
   async findOne(@Param('id') id: number): Promise<Bono> {
-    return this.bonosService.findOne(id);
+    const bono = await this.bonosService.findOne(id);
+    if (!bono) {
+      throw new NotFoundException(`Bono con ID ${id} no encontrado`);
+    }
+    return bono;
   }
 
   @Get('paciente/:id')

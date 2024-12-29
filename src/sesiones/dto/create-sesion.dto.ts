@@ -1,4 +1,4 @@
-import { IsNumber, IsDate, IsString } from 'class-validator';
+import { IsNumber, IsString, IsDate, IsNotEmpty } from 'class-validator';
 
 export class CreateSesionDto {
 
@@ -16,4 +16,13 @@ export class CreateSesionDto {
 
   @IsString()
   descripcion: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  bono_fk: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  paciente_fk: number;
 }
+

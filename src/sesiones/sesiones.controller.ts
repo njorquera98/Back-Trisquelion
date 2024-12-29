@@ -8,37 +8,39 @@ import { Sesion } from './entities/sesion.entity';
 export class SesionesController {
   constructor(private readonly sesionesService: SesionesService) { }
 
-  @Post(':pacienteId')
-  async create(
-    @Param('pacienteId') pacienteId: number,
-    @Body() sesionData: Partial<Sesion>,
-  ): Promise<Sesion> {
-
-    return this.sesionesService.create(pacienteId, sesionData);
+  @Post()
+  async create(@Body() createSesionDto: CreateSesionDto): Promise<Sesion> {
+    return this.sesionesService.create(createSesionDto);
   }
 
   @Get()
-  findAll() {
+  async findAll(): Promise<Sesion[]> {
     return this.sesionesService.findAll();
   }
 
   @Get('paciente/:pacienteId')
-  async findByPacienteId(@Param('pacienteId') pacienteId: number): Promise<Sesion[]> {
-    return this.sesionesService.findByPacienteId(pacienteId);
+  async getSesionesByPaciente(@Param('pacienteId') pacienteId: number): Promise<any[]> {
+    return this.sesionesService.getSesionesWithBonoByPaciente(pacienteId);
+  }
+
+  @Get('last/:pacienteId')
+  async getLastSesion(@Param('pacienteId') pacienteId: number): Promise<Sesion | null> {
+    return this.sesionesService.getLastSesion(pacienteId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.sesionesService.findOne(+id);
+  async findOne(@Param('id') id: number): Promise<Sesion> {
+    return this.sesionesService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: number, @Body() updateSesionDto: UpdateSesionDto) {
-    return this.sesionesService.update(+id, updateSesionDto);
+  async update(@Param('id') id: number, @Body() updateSesionDto: UpdateSesionDto): Promise<Sesion> {
+    return this.sesionesService.update(id, updateSesionDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.sesionesService.remove(+id);
+  async remove(@Param('id') id: number): Promise<void> {
+    return this.sesionesService.remove(id);
   }
 }
+

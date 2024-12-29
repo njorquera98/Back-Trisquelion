@@ -35,17 +35,8 @@ export class BonosService {
     return this.bonoRepository.find({ relations: ['paciente'] });
   }
 
-  async findOne(bonoId: number): Promise<Bono> {
-    const bono = await this.bonoRepository.findOne({
-      where: { bono_id: bonoId },
-      relations: ['paciente'], // Incluye la relación con el paciente si es necesario
-    });
-
-    if (!bono) {
-      throw new Error(`Bono con id ${bonoId} no encontrado`);
-    }
-
-    return bono;
+  async findOne(id: number): Promise<Bono | null> {
+    return this.bonoRepository.findOne({ where: { bono_id: id } });
   }
 
   async findByPaciente(pacienteId: number): Promise<Bono[]> {
