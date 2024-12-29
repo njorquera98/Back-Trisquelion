@@ -1,3 +1,4 @@
+import { Bono } from "src/bonos/entities/bono.entity";
 import { Sesion } from "src/sesiones/entities/sesion.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
@@ -19,6 +20,9 @@ export class Paciente {
 
   @Column()
   correo: string;
+
+  @Column()
+  domicilio: string;
 
   @Column({ type: 'date' })
   fecha_nacimiento: Date;
@@ -45,4 +49,7 @@ export class Paciente {
 
   @OneToMany(() => Sesion, sesion => sesion.paciente)
   sesiones: Sesion[];
+
+  @OneToMany(() => Bono, bono => bono.paciente)
+  bonos: Bono[];
 }
