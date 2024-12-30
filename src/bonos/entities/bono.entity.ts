@@ -16,6 +16,9 @@ export class Bono {
   @Column()
   valor: number;
 
+  @Column()
+  sesionesDisponibles: number;
+
   @ManyToOne(() => Paciente, paciente => paciente.bonos, { eager: true })
   @JoinColumn({ name: 'paciente_fk' })
   paciente: Paciente;
