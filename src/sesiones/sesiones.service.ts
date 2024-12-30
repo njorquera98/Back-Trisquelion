@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSesionDto } from './dto/create-sesion.dto';
 import { UpdateSesionDto } from './dto/update-sesion.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,20 +21,37 @@ export class SesionesService {
   async create(sesionData: CreateSesionDto): Promise<Sesion> {
     const { paciente_fk, bono_fk, ...rest } = sesionData;
 
+    // Buscar al paciente
     const paciente = await this.pacientesRepository.findOne({ where: { paciente_id: paciente_fk } });
     if (!paciente) throw new NotFoundException(`Paciente con ID ${paciente_fk} no encontrado`);
 
+    // Buscar el bono
     const bono = await this.bonosRepository.findOne({ where: { bono_id: bono_fk } });
     if (!bono) throw new NotFoundException(`Bono con ID ${bono_fk} no encontrado`);
 
+    // Verificar si el bono tiene sesiones disponibles
+    if (bono.sesionesDisponibles <= 0) {
+      throw new BadRequestException(`No hay sesiones disponibles para este bono`);
+    }
+
+
+    // Decrementar las sesiones disponibles del bono
+    bono.sesionesDisponibles -= 1;
+
+    // Guardar el bono con el número actualizado de sesiones disponibles
+    await this.bonosRepository.save(bono);
+
+    // Crear la nueva sesión
     const nuevaSesion = this.sesionesRepository.create({
       ...rest,
       paciente,
       bono,
     });
 
+    // Guardar la nueva sesión
     return this.sesionesRepository.save(nuevaSesion);
   }
+
 
   async findAll(): Promise<Sesion[]> {
     return this.sesionesRepository.find({ relations: ['paciente', 'bono'] });
