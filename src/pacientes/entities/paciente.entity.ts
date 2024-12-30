@@ -1,4 +1,5 @@
 import { Bono } from "src/bonos/entities/bono.entity";
+import { Evaluacion } from "src/evaluaciones/entities/evaluacion.entity";
 import { Sesion } from "src/sesiones/entities/sesion.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
@@ -32,24 +33,13 @@ export class Paciente {
 
   @Column({ default: true })
   activo: boolean;
-  /*
-  //Nueva tabla?
-  @Column()
-  objetivo: string;
-
-  @Column()
-  diagnostico: string;
-
-  @Column()
-  anamnesis: string;
-
-  @Column({type: 'date'})
-  fecha_ingreso: Date;
-  */
 
   @OneToMany(() => Sesion, sesion => sesion.paciente)
   sesiones: Sesion[];
 
   @OneToMany(() => Bono, bono => bono.paciente)
   bonos: Bono[];
+
+  @OneToMany(() => Evaluacion, evaluacion => evaluacion.paciente)
+  evaluaciones: Evaluacion[]
 }
