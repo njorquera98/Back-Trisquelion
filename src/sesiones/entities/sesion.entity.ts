@@ -1,4 +1,5 @@
 import { Bono } from "src/bonos/entities/bono.entity";
+import { Evaluacion } from "src/evaluaciones/entities/evaluacion.entity";
 import { Paciente } from "src/pacientes/entities/paciente.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
@@ -31,4 +32,8 @@ export class Sesion {
   @ManyToOne(() => Bono, bono => bono.sesiones)
   @JoinColumn({ name: 'bono_fk' })
   bono: Bono;
+
+  @ManyToOne(() => Evaluacion, (evaluacion) => evaluacion.sesiones)
+  @JoinColumn({ name: 'evaluacion_fk' })
+  evaluacion: Evaluacion;
 }

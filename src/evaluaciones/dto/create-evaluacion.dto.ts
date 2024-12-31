@@ -22,5 +22,8 @@ export class CreateEvaluacionDto {
 
   @IsNotEmpty()
   bono_fk: number;
+
+  @IsNotEmpty()
+  evaluacion_fk: number;
 }
 

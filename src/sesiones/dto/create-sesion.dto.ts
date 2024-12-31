@@ -24,5 +24,9 @@ export class CreateSesionDto {
   @IsNotEmpty()
   @IsNumber()
   paciente_fk: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  evaluacion_fk: number;
 }
 

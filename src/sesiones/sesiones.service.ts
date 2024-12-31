@@ -6,6 +6,7 @@ import { Sesion } from './entities/sesion.entity';
 import { Repository } from 'typeorm';
 import { Paciente } from 'src/pacientes/entities/paciente.entity';
 import { Bono } from 'src/bonos/entities/bono.entity';
+import { Evaluacion } from 'src/evaluaciones/entities/evaluacion.entity';
 
 @Injectable()
 export class SesionesService {
@@ -16,42 +17,44 @@ export class SesionesService {
     private readonly pacientesRepository: Repository<Paciente>,
     @InjectRepository(Bono)
     private readonly bonosRepository: Repository<Bono>,
+    @InjectRepository(Evaluacion)
+    private readonly evalucionesRepository: Repository<Evaluacion>
   ) { }
 
-  async create(sesionData: CreateSesionDto): Promise<Sesion> {
-    const { paciente_fk, bono_fk, ...rest } = sesionData;
+  async create(createSesionDto: CreateSesionDto): Promise<Sesion> {
+    const { evaluacion_fk, bono_fk, paciente_fk, ...sesionData } = createSesionDto;
 
-    // Buscar al paciente
-    const paciente = await this.pacientesRepository.findOne({ where: { paciente_id: paciente_fk } });
-    if (!paciente) throw new NotFoundException(`Paciente con ID ${paciente_fk} no encontrado`);
-
-    // Buscar el bono
-    const bono = await this.bonosRepository.findOne({ where: { bono_id: bono_fk } });
-    if (!bono) throw new NotFoundException(`Bono con ID ${bono_fk} no encontrado`);
-
-    // Verificar si el bono tiene sesiones disponibles
-    if (bono.sesionesDisponibles <= 0) {
-      throw new BadRequestException(`No hay sesiones disponibles para este bono`);
+    // Buscar la evaluación asociada
+    const evaluacion = await this.evalucionesRepository.findOne({ where: { evaluacion_id: evaluacion_fk } });
+    if (!evaluacion) {
+      throw new NotFoundException(`Evaluación con ID ${evaluacion_fk} no encontrada`);
     }
 
+    // Buscar el bono asociado
+    const bono = await this.bonosRepository.findOne({ where: { bono_id: bono_fk } });
+    if (!bono) {
+      throw new NotFoundException(`Bono con ID ${bono_fk} no encontrado`);
+    }
 
-    // Decrementar las sesiones disponibles del bono
+    // Validar sesiones disponibles en el bono
+    if (bono.sesionesDisponibles <= 0) {
+      throw new BadRequestException(`No hay sesiones disponibles en el bono`);
+    }
+
+    // Descontar una sesión del bono
     bono.sesionesDisponibles -= 1;
+    await this.bonosRepository.save(bono); // Guardar el bono actualizado
 
-    // Guardar el bono con el número actualizado de sesiones disponibles
-    await this.bonosRepository.save(bono);
+    // Buscar el paciente asociado (aquí asignamos paciente_fk)
+    const paciente = await this.pacientesRepository.findOne({ where: { paciente_id: paciente_fk } });
+    if (!paciente) {
+      throw new NotFoundException(`Paciente con ID ${paciente_fk} no encontrado`);
+    }
 
-    // Crear la nueva sesión
-    const nuevaSesion = this.sesionesRepository.create({
-      ...rest,
-      paciente,
-      bono,
-    });
-
-    // Guardar la nueva sesión
-    return this.sesionesRepository.save(nuevaSesion);
+    // Crear y guardar la sesión, incluyendo paciente_fk
+    const sesion = this.sesionesRepository.create({ ...sesionData, evaluacion, bono, paciente });
+    return this.sesionesRepository.save(sesion);
   }
-
 
   async findAll(): Promise<Sesion[]> {
     return this.sesionesRepository.find({ relations: ['paciente', 'bono'] });
