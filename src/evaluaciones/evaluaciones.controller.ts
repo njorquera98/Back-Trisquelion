@@ -1,16 +1,15 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
 import { EvaluacionesService } from './evaluaciones.service';
-import { CreateEvaluacionDto } from './dto/create-evaluacion.dto';
-import { UpdateEvaluacionDto } from './dto/update-evaluacion.dto';
 import { Evaluacion } from './entities/evaluacion.entity';
+import { CreateEvaluacionDto } from './dto/create-evaluacion.dto';
 
 @Controller('evaluaciones')
 export class EvaluacionesController {
   constructor(private readonly evaluacionesService: EvaluacionesService) { }
 
   @Post()
-  async create(@Body() createEvaluacionDto: CreateEvaluacionDto): Promise<Evaluacion> {
-    return this.evaluacionesService.create(createEvaluacionDto);
+  async create(@Body() crearEvaluacionDto: CreateEvaluacionDto): Promise<Evaluacion> {
+    return this.evaluacionesService.create(crearEvaluacionDto);
   }
 
   @Get()
@@ -20,21 +19,32 @@ export class EvaluacionesController {
 
   @Get(':id')
   async findOne(@Param('id') id: number): Promise<Evaluacion> {
-    return this.evaluacionesService.findOne(id);
+    const evaluacion = await this.evaluacionesService.findOne(id);
+    if (!evaluacion) {
+      throw new NotFoundException(`Evaluación con ID ${id} no encontrada`);
+    }
+    return evaluacion;
   }
 
-  @Get('last/:pacienteId')
-  getLastEvaluacion(@Param('pacienteId') pacienteId: number) {
-    return this.evaluacionesService.getLastEvaluacionByPaciente(pacienteId);
+  @Get('last/:id')
+  async findLastByPaciente(@Param('id') id: number): Promise<Evaluacion> {
+    const evaluacion = await this.evaluacionesService.findLastByPaciente(id);
+    if (!evaluacion) {
+      throw new NotFoundException(`No se encontró ninguna evaluación para el paciente con ID ${id}`);
+    }
+    return evaluacion;
   }
 
-  @Put(':id')
-  async update(@Param('id') id: number, @Body() updateEvaluacionDto: UpdateEvaluacionDto): Promise<Evaluacion> {
+  @Patch(':id')
+  async update(
+    @Param('id') id: number,
+    @Body() updateEvaluacionDto: Partial<CreateEvaluacionDto>,
+  ): Promise<Evaluacion> {
     return this.evaluacionesService.update(id, updateEvaluacionDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: number): Promise<void> {
+  async remove(@Param('id') id: number): Promise<string> {
     return this.evaluacionesService.remove(id);
   }
 }

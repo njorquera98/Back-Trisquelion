@@ -1,77 +1,77 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateEvaluacionDto } from './dto/create-evaluacion.dto';
-import { UpdateEvaluacionDto } from './dto/update-evaluacion.dto';
-import { Paciente } from 'src/pacientes/entities/paciente.entity';
 import { Evaluacion } from './entities/evaluacion.entity';
+import { Paciente } from 'src/pacientes/entities/paciente.entity';
+import { CreateEvaluacionDto } from './dto/create-evaluacion.dto';
 
 @Injectable()
 export class EvaluacionesService {
   constructor(
     @InjectRepository(Evaluacion)
-    private readonly evaluacionesRepository: Repository<Evaluacion>,
+    private readonly evaluacionRepository: Repository<Evaluacion>,
     @InjectRepository(Paciente)
-    private readonly pacientesRepository: Repository<Paciente>,
+    private readonly pacienteRepository: Repository<Paciente>,
   ) { }
 
-  // Crear evaluación
-  async create(createEvaluacionDto: CreateEvaluacionDto): Promise<Evaluacion> {
-    const paciente = await this.pacientesRepository.findOne({ where: { paciente_id: createEvaluacionDto.paciente_fk } });
+  async create(crearEvaluacionDto: CreateEvaluacionDto): Promise<Evaluacion> {
+    const { paciente_fk, ...evaluacionData } = crearEvaluacionDto;
+
+    // Verificar que el paciente existe
+    const paciente = await this.pacienteRepository.findOne({
+      where: { paciente_id: paciente_fk },
+    });
+
     if (!paciente) {
-      throw new Error(`Paciente con ID ${createEvaluacionDto.paciente_fk} no encontrado`);
+      throw new Error(`Paciente con id ${paciente_fk} no encontrado`);
     }
 
-    const evaluacion = this.evaluacionesRepository.create({
-      ...createEvaluacionDto,
-      paciente,
-    });
-
-    return this.evaluacionesRepository.save(evaluacion);
+    // Crear la evaluación y asociarla al paciente
+    const evaluacion = this.evaluacionRepository.create({ ...evaluacionData, paciente });
+    return this.evaluacionRepository.save(evaluacion);
   }
 
-  // Obtener todas las evaluaciones
   async findAll(): Promise<Evaluacion[]> {
-    return this.evaluacionesRepository.find({ relations: ['paciente'] });
+    return this.evaluacionRepository.find({ relations: ['paciente'] });
   }
 
-  // Obtener una evaluación por su ID
-  async findOne(id: number): Promise<Evaluacion> {
-    const evaluacion = await this.evaluacionesRepository.findOne({ where: { evaluacion_id: id }, relations: ['paciente'] });
-    if (!evaluacion) {
-      throw new Error(`Evaluación con ID ${id} no encontrada`);
-    }
-    return evaluacion;
+  async findOne(id: number): Promise<Evaluacion | null> {
+    return this.evaluacionRepository.findOne({ where: { evaluacion_id: id } });
   }
 
-  // Obtener la última evaluación de un paciente
-  async getLastEvaluacionByPaciente(pacienteId: number): Promise<Evaluacion> {
-    return await this.evaluacionesRepository.findOne({
-      where: { paciente: { paciente_id: pacienteId } },  // Accedemos a la relación paciente
-      order: { fechaIngreso: 'DESC' },
+  async findLastByPaciente(pacienteId: number): Promise<Evaluacion | null> {
+    return this.evaluacionRepository.findOne({
+      where: { paciente: { paciente_id: pacienteId } },
+      relations: ['paciente'],
+      order: { fechaIngreso: 'DESC' }, // Ordenar por fecha de ingreso en orden descendente
     });
   }
 
-  // Actualizar evaluación
-  async update(id: number, updateEvaluacionDto: UpdateEvaluacionDto): Promise<Evaluacion> {
-    const evaluacion = await this.findOne(id);
+  async update(evaluacionId: number, updateEvaluacionDto: Partial<CreateEvaluacionDto>): Promise<Evaluacion> {
+    const evaluacion = await this.evaluacionRepository.findOne({
+      where: { evaluacion_id: evaluacionId },
+      relations: ['paciente'],
+    });
+
     if (!evaluacion) {
-      throw new Error(`Evaluación con ID ${id} no encontrada`);
+      throw new Error(`Evaluación con id ${evaluacionId} no encontrada`);
     }
 
+    // Actualizar los campos que vienen en el DTO
     Object.assign(evaluacion, updateEvaluacionDto);
 
-    return this.evaluacionesRepository.save(evaluacion);
+    return this.evaluacionRepository.save(evaluacion);
   }
 
-  // Eliminar evaluación
-  async remove(id: number): Promise<void> {
-    const evaluacion = await this.findOne(id);
+  async remove(evaluacionId: number): Promise<string> {
+    const evaluacion = await this.evaluacionRepository.findOne({ where: { evaluacion_id: evaluacionId } });
+
     if (!evaluacion) {
-      throw new Error(`Evaluación con ID ${id} no encontrada`);
+      throw new Error(`Evaluación con id ${evaluacionId} no encontrada`);
     }
 
-    await this.evaluacionesRepository.remove(evaluacion);
+    await this.evaluacionRepository.remove(evaluacion);
+    return `Evaluación con id ${evaluacionId} eliminada correctamente`;
   }
 }
 
