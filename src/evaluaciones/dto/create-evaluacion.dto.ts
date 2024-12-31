@@ -19,5 +19,8 @@ export class CreateEvaluacionDto {
 
   @IsNotEmpty()
   paciente_fk: number;
+
+  @IsNotEmpty()
+  bono_fk: number;
 }
 
