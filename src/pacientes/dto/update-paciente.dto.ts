@@ -21,6 +21,11 @@ export class UpdatePacienteDto extends PartialType(CreatePacienteDto) {
   @IsString()
   @IsOptional()
   @MinLength(1)
+  rut: string;
+
+  @IsString()
+  @IsOptional()
+  @MinLength(1)
   correo?: string;
 
   @IsString()

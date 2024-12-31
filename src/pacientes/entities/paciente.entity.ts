@@ -17,6 +17,9 @@ export class Paciente {
   apellido: string;
 
   @Column()
+  rut: string;
+
+  @Column()
   telefono: string;
 
   @Column()
