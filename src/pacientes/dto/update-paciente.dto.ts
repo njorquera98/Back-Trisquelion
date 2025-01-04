@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreatePacienteDto } from './create-paciente.dto';
-import { IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsDate, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdatePacienteDto extends PartialType(CreatePacienteDto) {
   @IsString()
@@ -21,7 +21,7 @@ export class UpdatePacienteDto extends PartialType(CreatePacienteDto) {
   @IsString()
   @IsOptional()
   @MinLength(1)
-  rut: string;
+  rut?: string;
 
   @IsString()
   @IsOptional()
@@ -30,10 +30,18 @@ export class UpdatePacienteDto extends PartialType(CreatePacienteDto) {
 
   @IsString()
   @IsOptional()
-  domicilio: string;
+  domicilio?: string;
+
+  @IsDate()
+  @IsOptional()
+  fecha_nacimiento?: Date;
 
   @IsString()
   @IsOptional()
   @MinLength(1)
-  fecha_nacimiento?: Date;
+  prevision?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  activo?: boolean;
 }

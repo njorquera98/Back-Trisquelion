@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePacienteDto } from './dto/create-paciente.dto';
 import { UpdatePacienteDto } from './dto/update-paciente.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -32,8 +32,18 @@ export class PacientesService {
     return this.pacientesRepository.findOneBy({ paciente_id });
   }
 
-  update(id: number, updatePacienteDto: UpdatePacienteDto) {
-    return this.pacientesRepository.update(id, updatePacienteDto);
+  async update(id: number, updatePacienteDto: UpdatePacienteDto) {
+    const paciente = await this.pacientesRepository.findOneBy({ paciente_id: id });
+
+    if (!paciente) {
+      throw new NotFoundException(`Paciente con ID ${id} no encontrado`);
+    }
+
+    // Asigna los valores del DTO al paciente encontrado
+    Object.assign(paciente, updatePacienteDto);
+
+    // Guarda el paciente actualizado
+    return await this.pacientesRepository.save(paciente);
   }
 
   remove(id: number) {
