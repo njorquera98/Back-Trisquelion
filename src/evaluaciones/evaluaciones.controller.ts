@@ -35,6 +35,15 @@ export class EvaluacionesController {
     return evaluacion;
   }
 
+  @Get('paciente/:pacienteId')
+  async findAllByPaciente(@Param('pacienteId') pacienteId: number): Promise<Evaluacion[]> {
+    const evaluaciones = await this.evaluacionesService.findAllByPaciente(pacienteId);
+    if (!evaluaciones || evaluaciones.length === 0) {
+      throw new NotFoundException(`No se encontraron evaluaciones para el paciente con ID ${pacienteId}`);
+    }
+    return evaluaciones;
+  }
+
   @Patch(':id')
   async update(
     @Param('id') id: number,

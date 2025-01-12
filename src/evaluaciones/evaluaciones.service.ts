@@ -66,6 +66,14 @@ export class EvaluacionesService {
     });
   }
 
+  async findAllByPaciente(pacienteId: number): Promise<Evaluacion[]> {
+    return this.evaluacionRepository.find({
+      where: { paciente: { paciente_id: pacienteId } },
+      relations: ['paciente', 'bono'], // Incluimos la relación con paciente y bono
+      order: { fechaIngreso: 'DESC' }, // Ordenar las evaluaciones por fecha de ingreso
+    });
+  }
+
   async update(evaluacionId: number, updateEvaluacionDto: Partial<CreateEvaluacionDto>): Promise<Evaluacion> {
     const evaluacion = await this.evaluacionRepository.findOne({
       where: { evaluacion_id: evaluacionId },
