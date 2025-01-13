@@ -61,9 +61,16 @@ export class SesionesService {
   }
 
   async findOne(id: number): Promise<Sesion> {
-    const sesion = await this.sesionesRepository.findOne({ where: { sesion_id: id }, relations: ['paciente', 'bono'] });
+    const sesion = await this.sesionesRepository.findOne({ where: { sesion_id: id }, relations: ['evaluacion', 'paciente', 'bono'] });
     if (!sesion) throw new NotFoundException(`Sesión con ID ${id} no encontrada`);
     return sesion;
+  }
+
+  async findById(id: number): Promise<Sesion> {
+    return this.sesionesRepository.findOne({
+      where: { sesion_id: id },
+      relations: ['evaluacion', 'paciente', 'bono'], // Cargar relaciones necesarias
+    });
   }
 
   async getSesionesWithBonoByPaciente(pacienteId: number): Promise<any[]> {

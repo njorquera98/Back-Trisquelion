@@ -33,6 +33,18 @@ export class SesionesController {
     return this.sesionesService.findOne(id);
   }
 
+  @Get('simple/:id')
+  async getSesionSimple(@Param('id') id: number): Promise<any> {
+    const sesion = await this.sesionesService.findById(id);
+
+    // Transformar los datos al formato esperado
+    return {
+      ...sesion,
+      evaluacion_fk: sesion.evaluacion?.evaluacion_id, // Extraer solo el ID
+      evaluacion: undefined, // Opcional: eliminar el objeto anidado
+    };
+  }
+
   @Patch(':id')
   async update(@Param('id') id: number, @Body() updateSesionDto: UpdateSesionDto): Promise<Sesion> {
     return this.sesionesService.update(id, updateSesionDto);
