@@ -16,17 +16,20 @@ export class PacientesService {
     return this.pacientesRepository.save(createPacienteDto);
   }
 
-  // Modificación de la función findAll para que acepte un parámetro de filtro 'activo'
+  // Modificación de la función findAll para ordenar siempre por apellido
   findAll(activo?: boolean) {
-    // Si 'activo' está definido, filtramos pacientes según su estado
+    const queryOptions: any = {
+      order: { apellido: 'ASC' } // Siempre ordena por apellido de forma ascendente
+    };
+
     if (activo !== undefined) {
-      return this.pacientesRepository.find({
-        where: { activo } // Filtra según el valor de 'activo' (true o false)
-      });
+      queryOptions.where = { activo }; // Filtra según el valor de 'activo' (true o false)
     }
-    // Si no se pasa 'activo', retorna todos los pacientes sin filtro
-    return this.pacientesRepository.find();
+
+    // Retorna los pacientes con el filtro y el orden por apellido
+    return this.pacientesRepository.find(queryOptions);
   }
+
 
   findOne(paciente_id: number) {
     return this.pacientesRepository.findOneBy({ paciente_id });
