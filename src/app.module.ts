@@ -25,6 +25,7 @@ import { EvaluacionesModule } from './evaluaciones/evaluaciones.module';
       password: configService.get('DB_PASSWORD'),
       database: configService.get('DB_DATABASE'),
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      charset: 'utf8mb4_unicode_ci',
       autoLoadEntities: true,
       synchronize: true,
     }),

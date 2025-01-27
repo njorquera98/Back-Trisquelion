@@ -22,7 +22,7 @@ export class Sesion {
   @Column()
   tipo_sesion: string;
 
-  @Column()
+  @Column({ type: 'longtext' })
   descripcion: string;
 
   @ManyToOne(() => Paciente, paciente => paciente.sesiones)

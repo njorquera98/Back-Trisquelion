@@ -8,13 +8,13 @@ export class Evaluacion {
   @PrimaryGeneratedColumn()
   evaluacion_id: number;
 
-  @Column()
+  @Column({ type: 'longtext' })
   objetivo: string;
 
-  @Column()
+  @Column({ type: 'longtext' })
   diagnostico: string;
 
-  @Column()
+  @Column({ type: 'longtext' })
   anamnesis: string;
 
   @Column({ type: 'date' })
