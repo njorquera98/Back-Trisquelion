@@ -9,6 +9,8 @@ import { UsuarioModule } from './usuario/usuario.module';
 import { AuthModule } from './auth/auth.module';
 import { BonosModule } from './bonos/bonos.module';
 import { EvaluacionesModule } from './evaluaciones/evaluaciones.module';
+import { HorarioModule } from './horario/horario.module';
+import { AsistenciaModule } from './asistencia/asistencia.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -36,6 +38,8 @@ import { EvaluacionesModule } from './evaluaciones/evaluaciones.module';
     BonosModule,
     AuthModule,
     EvaluacionesModule,
+    HorarioModule,
+    AsistenciaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

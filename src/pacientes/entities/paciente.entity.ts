@@ -1,5 +1,7 @@
+import { Asistencia } from "src/asistencia/entities/asistencia.entity";
 import { Bono } from "src/bonos/entities/bono.entity";
 import { Evaluacion } from "src/evaluaciones/entities/evaluacion.entity";
+import { Horario } from "src/horario/entities/horario.entity";
 import { Sesion } from "src/sesiones/entities/sesion.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
@@ -45,4 +47,10 @@ export class Paciente {
 
   @OneToMany(() => Evaluacion, evaluacion => evaluacion.paciente)
   evaluaciones: Evaluacion[]
+
+  @OneToMany(() => Horario, (horario) => horario.paciente)
+  horarios: Horario[];
+
+  @OneToMany(() => Asistencia, (asistencia) => asistencia.paciente)
+  asistencias: Asistencia[];
 }
