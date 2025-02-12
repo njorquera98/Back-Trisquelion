@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateHorarioDto {
   @IsNotEmpty()
@@ -6,8 +6,9 @@ export class CreateHorarioDto {
   dia_semana: string;
 
   @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  hora: string;
+  hora: string | null;
 
   @IsNotEmpty()
   @IsNumber()

@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Paciente } from 'src/pacientes/entities/paciente.entity';
 import { Repository } from 'typeorm';
 import { Horario } from './entities/horario.entity';
+import { Not, IsNull } from 'typeorm';
 
 @Injectable()
 export class HorarioService {
@@ -40,13 +41,14 @@ export class HorarioService {
 
     const diaNombre = this.diaDeLaSemanaToString(diaDeLaSemana);  // Convertir a nombre de día
 
-    // Filtra los horarios en función del nombre del día y que el paciente esté activo
+    // Filtra los horarios en función del nombre del día, que el paciente esté activo y que la hora no sea null
     const horariosHoy = await this.horarioRepository.find({
       where: {
         dia_semana: diaNombre,  // Filtrar por día de la semana
         paciente: {
           activo: true  // Filtrar pacientes activos
-        }
+        },
+        hora: Not(IsNull())  // Asegura que la hora no sea null
       },
       relations: ['paciente'], // Asegúrate de cargar las relaciones necesarias
     });
@@ -70,11 +72,22 @@ export class HorarioService {
 
 
   async update(id: number, updateHorarioDto: UpdateHorarioDto): Promise<Horario> {
-    await this.horarioRepository.update(id, updateHorarioDto);
-    const updatedHorario = await this.horarioRepository.findOne({ where: { horario_id: id } });
-    if (!updatedHorario) throw new NotFoundException('Horario no encontrado');
-    return updatedHorario;
+    const horario = await this.horarioRepository.findOne({ where: { horario_id: id } });
+
+    if (!horario) {
+      throw new NotFoundException('Horario no encontrado');
+    }
+
+    // Actualizar solo los campos que han sido modificados
+    if (updateHorarioDto.hora !== undefined) {
+      horario.hora = updateHorarioDto.hora;
+    }
+
+    await this.horarioRepository.save(horario);
+
+    return horario;
   }
+
   remove(id: number) {
     return `This action removes a #${id} horario`;
   }
