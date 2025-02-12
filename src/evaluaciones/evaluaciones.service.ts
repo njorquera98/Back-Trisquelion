@@ -62,7 +62,7 @@ export class EvaluacionesService {
     return this.evaluacionRepository.findOne({
       where: { paciente: { paciente_id: pacienteId } },
       relations: ['paciente', 'bono'],  // Incluimos la relación con Bono
-      order: { fechaIngreso: 'DESC' },  // Ordenar por fecha de ingreso en orden descendente
+      order: { evaluacion_id: 'DESC' }, // Ordenar por ID en orden descendente
     });
   }
 
@@ -70,7 +70,7 @@ export class EvaluacionesService {
     return this.evaluacionRepository.find({
       where: { paciente: { paciente_id: pacienteId } },
       relations: ['paciente', 'bono'], // Incluimos la relación con paciente y bono
-      order: { fechaIngreso: 'DESC' }, // Ordenar las evaluaciones por fecha de ingreso
+      order: { evaluacion_id: 'DESC' }, // Ordenar las evaluaciones por fecha de ingreso
     });
   }
 
