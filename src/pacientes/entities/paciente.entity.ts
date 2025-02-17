@@ -2,6 +2,8 @@ import { Asistencia } from "src/asistencia/entities/asistencia.entity";
 import { Bono } from "src/bonos/entities/bono.entity";
 import { Evaluacion } from "src/evaluaciones/entities/evaluacion.entity";
 import { Horario } from "src/horario/entities/horario.entity";
+import { Nota } from "src/nota/entities/nota.entity";
+import { PesoMaximo } from "src/peso-maximo/entities/peso-maximo.entity";
 import { Sesion } from "src/sesiones/entities/sesion.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
@@ -53,4 +55,11 @@ export class Paciente {
 
   @OneToMany(() => Asistencia, (asistencia) => asistencia.paciente)
   asistencias: Asistencia[];
+
+  @OneToMany(() => PesoMaximo, (pesoMaximo) => pesoMaximo.paciente)
+  pesosMaximos: PesoMaximo[];
+
+  @OneToMany(() => Nota, (nota) => nota.paciente)
+  notas: Nota[];
+
 }

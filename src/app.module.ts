@@ -11,6 +11,8 @@ import { BonosModule } from './bonos/bonos.module';
 import { EvaluacionesModule } from './evaluaciones/evaluaciones.module';
 import { HorarioModule } from './horario/horario.module';
 import { AsistenciaModule } from './asistencia/asistencia.module';
+import { PesoMaximoModule } from './peso-maximo/peso-maximo.module';
+import { NotaModule } from './nota/nota.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -40,6 +42,8 @@ import { AsistenciaModule } from './asistencia/asistencia.module';
     EvaluacionesModule,
     HorarioModule,
     AsistenciaModule,
+    PesoMaximoModule,
+    NotaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
