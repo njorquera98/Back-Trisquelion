@@ -1,13 +1,16 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsDateString, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateNotaDto {
-
   @IsNotEmpty()
   @IsString()
   contenido: string;
 
+  @IsDateString()
+  @IsNotEmpty()
+  fechaCreacion: string;
+
   @IsNotEmpty()
   @IsNumber()
-  pacienteId: number;
+  paciente_fk: number;
 }
 

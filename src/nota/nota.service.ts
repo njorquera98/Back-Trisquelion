@@ -4,18 +4,37 @@ import { Repository } from 'typeorm';
 import { Nota } from './entities/nota.entity';
 import { CreateNotaDto } from './dto/create-nota.dto';
 import { UpdateNotaDto } from './dto/update-nota.dto';
+import { Paciente } from 'src/pacientes/entities/paciente.entity';
 
 @Injectable()
 export class NotaService {
   constructor(
     @InjectRepository(Nota)
     private readonly notaRepository: Repository<Nota>,
+
+    @InjectRepository(Paciente)
+    private readonly pacienteRepository: Repository<Paciente>,
   ) { }
 
   async create(createNotaDto: CreateNotaDto): Promise<Nota> {
-    const nota = this.notaRepository.create(createNotaDto);
+    // Buscar el paciente en la BD
+    const paciente = await this.pacienteRepository.findOne({
+      where: { paciente_id: createNotaDto.paciente_fk },
+    });
+
+    if (!paciente) {
+      throw new Error('Paciente no encontrado');
+    }
+
+    const nota = this.notaRepository.create({
+      contenido: createNotaDto.contenido,
+      fechaCreacion: createNotaDto.fechaCreacion,
+      paciente,
+    });
+
     return await this.notaRepository.save(nota);
   }
+
 
   async findAll(): Promise<Nota[]> {
     return await this.notaRepository.find({ relations: ['paciente'] });

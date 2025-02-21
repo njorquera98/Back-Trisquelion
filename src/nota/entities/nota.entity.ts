@@ -13,7 +13,7 @@ export class Nota {
   @Column('longtext')
   contenido: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  fechaCreacion: Date;
+  @Column({ type: 'date' })
+  fechaCreacion: string;
 }
 
