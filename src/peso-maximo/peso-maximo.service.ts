@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { PesoMaximo } from './entities/peso-maximo.entity';
 import { CreatePesoMaximoDto } from './dto/create-peso-maximo.dto';
 import { UpdatePesoMaximoDto } from './dto/update-peso-maximo.dto';
+import { Paciente } from 'src/pacientes/entities/paciente.entity';
 
 
 @Injectable()
@@ -11,10 +12,26 @@ export class PesoMaximoService {
   constructor(
     @InjectRepository(PesoMaximo)
     private readonly pesoMaximoRepository: Repository<PesoMaximo>,
+
+    @InjectRepository(Paciente)
+    private readonly pacienteRepository: Repository<Paciente>
   ) { }
 
+
   async create(createPesoMaximoDto: CreatePesoMaximoDto): Promise<PesoMaximo> {
-    const pesoMaximo = this.pesoMaximoRepository.create(createPesoMaximoDto);
+    const paciente = await this.pacienteRepository.findOne({
+      where: { paciente_id: createPesoMaximoDto.paciente_fk }, // Buscamos por ID
+    });
+
+    if (!paciente) {
+      throw new Error('Paciente no encontrado');
+    }
+
+    const pesoMaximo = this.pesoMaximoRepository.create({
+      ...createPesoMaximoDto,
+      paciente: paciente, // Asignamos la entidad paciente
+    });
+
     return await this.pesoMaximoRepository.save(pesoMaximo);
   }
 

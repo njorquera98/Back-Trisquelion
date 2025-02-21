@@ -15,6 +15,6 @@ export class CreatePesoMaximoDto {
 
   @IsNotEmpty()
   @IsNumber()
-  pacienteId: number;
+  paciente_fk: number;
 }
 
