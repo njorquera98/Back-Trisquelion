@@ -27,11 +27,14 @@ export class EvaluacionesController {
   }
 
   @Get('last/:id')
-  async findLastByPaciente(@Param('id') id: number): Promise<Evaluacion> {
+  async findLastByPaciente(@Param('id') id: number): Promise<Evaluacion | null> {
     const evaluacion = await this.evaluacionesService.findLastByPaciente(id);
+
     if (!evaluacion) {
-      throw new NotFoundException(`No se encontró ninguna evaluación para el paciente con ID ${id}`);
+      // Si no se encuentra evaluación, devolver null con estado 200
+      return null;
     }
+
     return evaluacion;
   }
 
