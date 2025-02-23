@@ -22,6 +22,9 @@ export class Consulta {
   @Column({ type: 'text' })
   sintomas: string;
 
+  @Column({ type: 'text' })
+  diagnostico: string;
+
   @Column({ type: 'varchar', length: 100 })
   tipoConsulta: string;
 }

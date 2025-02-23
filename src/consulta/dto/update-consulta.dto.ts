@@ -22,4 +22,8 @@ export class UpdateConsultaDto extends PartialType(CreateConsultaDto) {
   @IsOptional()
   @IsString()
   tipoConsulta?: string;
+
+  @IsOptional()
+  @IsString()
+  diagnostico?: string;
 }

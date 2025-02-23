@@ -24,4 +24,8 @@ export class CreateConsultaDto {
   @IsNotEmpty()
   @IsString()
   tipoConsulta: string;
+
+  @IsNotEmpty()
+  @IsString()
+  diagnostico: string;
 }
