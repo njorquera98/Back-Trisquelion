@@ -13,6 +13,7 @@ import { HorarioModule } from './horario/horario.module';
 import { AsistenciaModule } from './asistencia/asistencia.module';
 import { PesoMaximoModule } from './peso-maximo/peso-maximo.module';
 import { NotaModule } from './nota/nota.module';
+import { AntecedenteModule } from './antecedente/antecedente.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -44,6 +45,7 @@ import { NotaModule } from './nota/nota.module';
     AsistenciaModule,
     PesoMaximoModule,
     NotaModule,
+    AntecedenteModule,
   ],
   controllers: [AppController],
   providers: [AppService],
