@@ -14,6 +14,7 @@ import { AsistenciaModule } from './asistencia/asistencia.module';
 import { PesoMaximoModule } from './peso-maximo/peso-maximo.module';
 import { NotaModule } from './nota/nota.module';
 import { AntecedenteModule } from './antecedente/antecedente.module';
+import { ConsultaModule } from './consulta/consulta.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -46,6 +47,7 @@ import { AntecedenteModule } from './antecedente/antecedente.module';
     PesoMaximoModule,
     NotaModule,
     AntecedenteModule,
+    ConsultaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

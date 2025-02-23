@@ -1,6 +1,7 @@
 import { Antecedente } from "src/antecedente/entities/antecedente.entity";
 import { Asistencia } from "src/asistencia/entities/asistencia.entity";
 import { Bono } from "src/bonos/entities/bono.entity";
+import { Consulta } from "src/consulta/entities/consulta.entity";
 import { Evaluacion } from "src/evaluaciones/entities/evaluacion.entity";
 import { Horario } from "src/horario/entities/horario.entity";
 import { Nota } from "src/nota/entities/nota.entity";
@@ -65,4 +66,7 @@ export class Paciente {
 
   @OneToMany(() => Antecedente, (antecedente) => antecedente.paciente)
   antecedentes: Antecedente[];
+
+  @OneToMany(() => Consulta, (consulta) => consulta.paciente)
+  consultas: Consulta[];
 }
