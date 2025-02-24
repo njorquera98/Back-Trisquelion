@@ -16,6 +16,8 @@ import { NotaModule } from './nota/nota.module';
 import { AntecedenteModule } from './antecedente/antecedente.module';
 import { ConsultaModule } from './consulta/consulta.module';
 import { MedicoModule } from './medico/medico.module';
+import { DocumentoModule } from './documento/documento.module';
+import { FirmaModule } from './firma/firma.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -50,6 +52,8 @@ import { MedicoModule } from './medico/medico.module';
     AntecedenteModule,
     ConsultaModule,
     MedicoModule,
+    DocumentoModule,
+    FirmaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
