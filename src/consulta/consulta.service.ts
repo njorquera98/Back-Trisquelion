@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Paciente } from 'src/pacientes/entities/paciente.entity';
 import { Repository } from 'typeorm';
 import { Observable } from 'rxjs';
+import { Medico } from 'src/medico/entities/medico.entity';
 
 @Injectable()
 export class ConsultaService {
@@ -14,6 +15,8 @@ export class ConsultaService {
     private consultaRepository: Repository<Consulta>,
     @InjectRepository(Paciente)
     private pacienteRepository: Repository<Paciente>,
+    @InjectRepository(Medico)
+    private medicoRepository: Repository<Medico>,
   ) { }
 
   // Crear una nueva consulta
@@ -40,7 +43,7 @@ export class ConsultaService {
   async findByPaciente(pacienteId: number): Promise<Consulta[]> {
     return this.consultaRepository.find({
       where: { paciente: { paciente_id: pacienteId } },
-      relations: ['paciente'],
+      relations: ['paciente', 'medico'],
     });
   }
 
@@ -49,6 +52,20 @@ export class ConsultaService {
     const consulta = await this.consultaRepository.findOne({
       where: { consulta_id: id },
       relations: ['paciente'],
+    });
+
+    if (!consulta) {
+      throw new Error('Consulta no encontrada');
+    }
+
+    return consulta;
+  }
+
+  // Método para obtener consulta con relaciones de paciente y medico
+  async findConsultaConPacienteYMedico(id: number): Promise<Consulta> {
+    const consulta = await this.consultaRepository.findOne({
+      where: { consulta_id: id },
+      relations: ['paciente', 'medico'], // Cargar las relaciones necesarias
     });
 
     if (!consulta) {

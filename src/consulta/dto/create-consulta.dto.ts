@@ -28,4 +28,8 @@ export class CreateConsultaDto {
   @IsNotEmpty()
   @IsString()
   diagnostico: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  medico_fk: number;
 }
