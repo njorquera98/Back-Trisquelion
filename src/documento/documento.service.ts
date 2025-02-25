@@ -16,7 +16,6 @@ export class DocumentoService {
     private readonly firmaService: FirmaService,
   ) { }
 
-
   // Función para crear un PDF
   async crearPdf(consultaId: number): Promise<Documento> {
     // Paso 1: Obtener la consulta, paciente y médico
@@ -29,6 +28,7 @@ export class DocumentoService {
     const medico = consulta.medico;
     const fechaNacimiento = new Date(paciente.fecha_nacimiento);
     const edad = this.calcularEdad(fechaNacimiento);
+    const fechaCreacion = new Date(); // Tomamos la fecha actual
 
     // Paso 2: Crear el PDF
     const pdfDoc = await PDFDocument.create();
@@ -62,11 +62,13 @@ export class DocumentoService {
 
     // Diagnóstico
     page.drawText(`Diagnóstico: ${consulta.diagnostico}`, { x: 50, y: yPosition, size: 15 });
+    yPosition -= 30;
 
-    // Agregar el folio
+    // Agregar el folio y la fecha de creación del documento
     const folio = `FOLIO-${Date.now()}`;
-    yPosition -= 20;
     page.drawText(`Folio: ${folio}`, { x: 50, y: yPosition, size: 15 });
+    yPosition -= 20;
+    page.drawText(`Fecha de creación: ${fechaCreacion.toISOString().split('T')[0]}`, { x: 50, y: yPosition, size: 15 });
 
     // Convertir el PDF a Buffer
     const pdfBytes = await pdfDoc.save();
@@ -88,7 +90,7 @@ export class DocumentoService {
     documento.consulta = consulta;
     documento.folio = folio; // Asignamos el folio
     documento.clave_validacion_publica = publicKeyPem; // Asignamos la clave pública
-    // No asignar null a pdf_firmado aquí
+    documento.fecha_creacion = fechaCreacion; // Guardamos la fecha de creación en la base de datos
 
     // Guardamos el documento
     documento = await this.documentoRepository.save(documento);

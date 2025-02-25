@@ -69,6 +69,18 @@ export class FirmaService {
     // Aquí debes consultar la base de datos o el repositorio para obtener la firma guardada
     return 'firma_en_base64_obtenida_de_base_de_datos'; // Este es solo un ejemplo
   }
+
+  async validarCodigoDocumento(codigo: string): Promise<{ esValido: boolean; mensaje: string }> {
+    const documento = await this.documentoRepository.findOne({ where: { codigo_validacion: codigo } });
+
+    if (!documento) {
+      return { esValido: false, mensaje: 'Código de validación no encontrado' };
+    }
+
+    // Aquí puedes agregar lógica para verificar la firma si es necesario
+    return { esValido: true, mensaje: 'El documento es válido' };
+  }
+
 }
 
 

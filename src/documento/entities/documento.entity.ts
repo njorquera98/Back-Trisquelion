@@ -15,15 +15,18 @@ export class Documento {
   firmas: Firma[];
 
   @Column()
-  fecha_creacion: string;
+  fecha_creacion: Date;
 
   @Column()
   folio: string;
 
-  @Column()
+  @Column('longtext')
   clave_validacion_publica: string;
 
   @Column('blob')
   pdf_firmado: Buffer;
+
+  @Column()
+  codigo_validacion: string;
 }
 
