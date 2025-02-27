@@ -1,4 +1,3 @@
-import { Exclude } from 'class-transformer';
 import { Consulta } from 'src/consulta/entities/consulta.entity';
 import { Firma } from 'src/firma/entities/firma.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToOne } from 'typeorm';

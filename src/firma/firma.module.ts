@@ -4,9 +4,10 @@ import { FirmaController } from './firma.controller';
 import { Firma } from './entities/firma.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DocumentoModule } from 'src/documento/documento.module';
+import { Documento } from 'src/documento/entities/documento.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Firma]), forwardRef(() => DocumentoModule)], // forwardRef aquí
+  imports: [TypeOrmModule.forFeature([Firma, Documento]), forwardRef(() => DocumentoModule)], // forwardRef aquí
   controllers: [FirmaController],
   providers: [FirmaService],
   exports: [FirmaService], // Exportamos FirmaService

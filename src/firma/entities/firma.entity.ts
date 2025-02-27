@@ -12,7 +12,7 @@ export class Firma {
   @Exclude()
   documento: Documento;
 
-  @Column()
+  @Column('text')
   clave_publica: string;
 
   @Column('text')

@@ -1,6 +1,5 @@
-import { Controller, Get, Param, Body, Post, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Param, Body, Post, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DocumentoService } from './documento.service';
-import { FirmaService } from 'src/firma/firma.service';
 import { CreateDocumentoDto } from './dto/create-documento.dto';
 import { DocumentoResponseDto } from './dto/response-dto.documento';
 
@@ -8,7 +7,6 @@ import { DocumentoResponseDto } from './dto/response-dto.documento';
 export class DocumentoController {
   constructor(
     private readonly documentoService: DocumentoService,
-    private readonly firmaService: FirmaService,
   ) { }
 
   @Post('crear/:consultaId')
@@ -21,27 +19,36 @@ export class DocumentoController {
 
   @Get('validar/:codigo')
   async validarDocumento(@Param('codigo') codigo: string): Promise<DocumentoResponseDto> {
+    console.log(`🟡 Buscando documento con código: ${codigo}`);
+
+    // Obtener el documento
     const documento = await this.documentoService.obtenerDocumento(codigo);
+
     if (!documento) {
-      throw new NotFoundException('Documento no encontrado o inválido');
+      throw new NotFoundException('Documento no encontrado');
     }
 
-    const resultadoFirma = await this.firmaService.verificarFirma(documento.firma?.firma_id?.toString());
+    console.log('🔍 Documento encontrado:', documento);
 
-    if (!resultadoFirma || typeof resultadoFirma !== 'object') {
-      throw new Error('El servicio de firma debe devolver un objeto con { valido, documento }');
+    // Verificar la firma
+    const isFirmaValida = await this.documentoService.verificarFirma(codigo);
+
+    console.log(`🔑 Firma verificada: ${isFirmaValida ? 'Válida' : 'Inválida'}`);
+
+    if (!isFirmaValida) {
+      throw new BadRequestException('Firma no válida');
     }
 
-    const { valido, documento: doc } = resultadoFirma;
+    console.log(`✅ Documento validado y firma verificada con éxito`, documento);
 
     return {
-      documento_id: doc.documento_id,
-      fecha_creacion: doc.fecha_creacion,
-      folio: doc.folio,
-      codigo_validacion: doc.codigo_validacion,
-      consulta_fk: doc.consulta.consulta_id,
-      firma_fk: doc.firma?.firma_id || null,
-      firma: valido ? doc.firma : null,
+      documento_id: documento.documento_id ?? null,
+      fecha_creacion: documento.fecha_creacion ?? null,
+      folio: documento.folio ?? null,
+      codigo_validacion: documento.codigo_validacion ?? null,
+      consulta_fk: documento.consulta?.consulta_id ?? null,
+      firma_fk: documento.firma?.firma_id ?? null,
+      firma: documento.firma, // Incluye la firma validada
     };
   }
 }
