@@ -1,6 +1,7 @@
+import { Exclude } from 'class-transformer';
 import { Consulta } from 'src/consulta/entities/consulta.entity';
 import { Firma } from 'src/firma/entities/firma.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
 
 @Entity()
 export class Documento {
@@ -11,22 +12,17 @@ export class Documento {
   @JoinColumn({ name: 'consulta_fk' })
   consulta: Consulta;
 
-  @OneToMany(() => Firma, (firma) => firma.documento)
-  firmas: Firma[];
+  @OneToOne(() => Firma, (firma) => firma.documento, { cascade: true })
+  @JoinColumn({ name: 'firma_fk' })
+  firma: Firma;
 
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   fecha_creacion: Date;
 
-  @Column()
+  @Column({ unique: true })
   folio: string;
 
-  @Column('longtext')
-  clave_validacion_publica: string;
-
-  @Column('blob')
-  pdf_firmado: Buffer;
-
-  @Column()
+  @Column({ unique: true })
   codigo_validacion: string;
 }
 

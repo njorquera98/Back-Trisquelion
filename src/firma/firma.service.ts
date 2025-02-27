@@ -1,86 +1,57 @@
-import * as crypto from 'crypto';
-import * as fs from 'fs';
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Firma } from './entities/firma.entity';
+import { Documento } from 'src/documento/entities/documento.entity';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class FirmaService {
-  // Método para generar las claves si no existen
-  async generarClaves() {
-    const privateKeyPath = 'keys/private_key.pem';
-    const publicKeyPath = 'keys/public_key.pem';
+  constructor(
+    @InjectRepository(Firma)
+    private readonly firmaRepo: Repository<Firma>
+  ) { }
 
-    // Verificar si las claves ya existen
-    if (fs.existsSync(privateKeyPath) && fs.existsSync(publicKeyPath)) {
-      console.log('Las claves ya existen.');
-      return;
-    }
+  // Generar firma digital para un documento
+  async generarFirma(documento: Documento): Promise<Firma> {
+    const firma = new Firma();
+    firma.documento = documento;
 
-    // Generar las claves públicas y privadas
-    console.log('Generando nuevas claves...');
-    const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-      modulusLength: 2048,
+    // Generar un par de claves (en producción, debes manejar las claves de manera segura)
+    const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+
+    const documentoData = JSON.stringify({
+      folio: documento.folio,
+      codigo_validacion: documento.codigo_validacion,
+      fecha_creacion: documento.fecha_creacion,
+      consulta_id: documento.consulta.consulta_id,
     });
 
-    // Guardar las claves en archivos
-    fs.writeFileSync(privateKeyPath, privateKey.export({ type: 'pkcs1', format: 'pem' }));
-    fs.writeFileSync(publicKeyPath, publicKey.export({ type: 'spki', format: 'pem' }));
+    const hash = crypto.createHash('sha256').update(documentoData).digest('hex');
+    const signature = crypto.sign('sha256', Buffer.from(hash), privateKey).toString('base64');
 
-    console.log('Claves generadas y guardadas en archivos.');
+    firma.clave_publica = publicKey.export({ type: 'spki', format: 'pem' }).toString();
+    firma.firma_digital = signature;
+
+    return this.firmaRepo.save(firma);
   }
 
-  // Método para firmar el documento
-  async firmarDocumento(pdfBuffer: Buffer, privateKeyPem: string) {
-    const sign = crypto.createSign('SHA256');
-    sign.update(pdfBuffer);
-    sign.end();
+  async verificarFirma(firma: string): Promise<{ valido: boolean; documento?: Documento }> {
+    const esValido = true; // Simulación de validación de firma
 
-    const signature = sign.sign(privateKeyPem);
-
-    return {
-      pdf_firmado: pdfBuffer,  // Deberías devolver el PDF firmado, que es el mismo pdfBuffer
-      firma: signature.toString('base64'),
-    };
-  }
-
-
-  // Método para verificar la firma del documento
-  async verificarFirmaDocumento(documentoId: number, pdfBuffer: Buffer) {
-    const publicKeyPath = 'keys/public_key.pem';
-    const publicKeyPem = fs.readFileSync(publicKeyPath, 'utf8');
-
-    // Obtener la firma guardada en la base de datos (puedes implementarlo según tu modelo)
-    const firmaGuardada = await this.obtenerFirmaGuardada(documentoId); // Implementa este método
-
-    const verify = crypto.createVerify('SHA256');
-    verify.update(pdfBuffer);
-    verify.end();
-
-    // Verificar la firma
-    const esValido = verify.verify(publicKeyPem, firmaGuardada, 'base64');
-
-    return {
-      esValido,
-      mensaje: esValido ? 'Firma verificada correctamente' : 'Firma no válida',
-    };
-  }
-
-  // Función para obtener la firma guardada del documento (esto dependerá de tu base de datos)
-  private async obtenerFirmaGuardada(documentoId: number): Promise<string> {
-    // Aquí debes consultar la base de datos o el repositorio para obtener la firma guardada
-    return 'firma_en_base64_obtenida_de_base_de_datos'; // Este es solo un ejemplo
-  }
-
-  async validarCodigoDocumento(codigo: string): Promise<{ esValido: boolean; mensaje: string }> {
-    const documento = await this.documentoRepository.findOne({ where: { codigo_validacion: codigo } });
-
-    if (!documento) {
-      return { esValido: false, mensaje: 'Código de validación no encontrado' };
+    if (!esValido) {
+      return { valido: false };
     }
 
-    // Aquí puedes agregar lógica para verificar la firma si es necesario
-    return { esValido: true, mensaje: 'El documento es válido' };
+    const documento: Documento = {
+      documento_id: 1,
+      fecha_creacion: new Date(),
+      folio: '123456',
+      codigo_validacion: 'ABC123',
+      consulta: { consulta_id: 10 } as any, // Simulación
+      firma: { firma_id: 5 } as any, // Simulación
+    };
+
+    return { valido: true, documento };
   }
-
 }
-
-

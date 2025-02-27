@@ -1,31 +1,28 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
 import { FirmaService } from './firma.service';
-import * as fs from 'fs';
+import { DocumentoService } from 'src/documento/documento.service';
 
 @Controller('firma')
 export class FirmaController {
-  constructor(private readonly firmaService: FirmaService) { }
-
-  @Post('firmar')
-  async firmarDocumento(@Body() body: { documentoId: number; pdfBuffer: string }) {
-    const { documentoId, pdfBuffer } = body;
-
-    // Convertir el buffer en base64 a un buffer normal
-    const pdfBufferDecoded = Buffer.from(pdfBuffer, 'base64');
-
-    // Leer la clave privada desde el archivo
-    const privateKeyPath = 'keys/private_key.pem';
-    const privateKeyPem = fs.readFileSync(privateKeyPath, 'utf8');
-
-    // Llamar al servicio de firma con el pdfBuffer y la clave privada
-    return this.firmaService.firmarDocumento(pdfBufferDecoded, privateKeyPem);
-  }
-
-  @Post('verificar')
-  async verificarFirmaDocumento(@Body() body: { documentoId: number; pdfBuffer: string }) {
-    const { documentoId, pdfBuffer } = body;
-    const pdfBufferDecoded = Buffer.from(pdfBuffer, 'base64');
-    return this.firmaService.verificarFirmaDocumento(documentoId, pdfBufferDecoded);
-  }
+  constructor(
+    private readonly firmaService: FirmaService,
+    private readonly documentoService: DocumentoService
+  ) { }
+  /*
+    // Verificar la firma de un documento
+    @Get('verificar/:codigo')
+    async verificarFirma(@Param('codigo') codigo: string) {
+      const resultado = await this.documentoService.obtenerDocumento(codigo);
+  
+      if (!resultado.valido || !resultado.documento) {
+        throw new NotFoundException('Documento no encontrado.');
+      }
+  
+      const esValido = await this.firmaService.verificarFirma(resultado.documento);
+      return esValido
+        ? { mensaje: 'La firma es válida.' }
+        : { mensaje: 'La firma no es válida o el documento ha sido alterado.' };
+    }
+    */
 }
 

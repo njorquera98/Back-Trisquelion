@@ -1,31 +1,48 @@
-import { Controller, Post, Param, Get, Res, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Param, Body, Post, NotFoundException } from '@nestjs/common';
 import { DocumentoService } from './documento.service';
-import { Response } from 'express';
+import { FirmaService } from 'src/firma/firma.service';
+import { CreateDocumentoDto } from './dto/create-documento.dto';
+import { DocumentoResponseDto } from './dto/response-dto.documento';
 
 @Controller('documento')
 export class DocumentoController {
-  constructor(private readonly documentoService: DocumentoService) { }
+  constructor(
+    private readonly documentoService: DocumentoService,
+    private readonly firmaService: FirmaService,
+  ) { }
 
-  // Ruta para generar el PDF
-  @Post('pdf/:consultaId')
-  async generarPdf(@Param('consultaId') consultaId: number) {
-    return this.documentoService.crearPdf(consultaId);  // Llamamos al servicio para generar el PDF
+  @Post('crear/:consultaId')
+  async crearDocumento(
+    @Param('consultaId') consultaId: number,
+    @Body() createDocumentoDto: CreateDocumentoDto
+  ) {
+    return this.documentoService.crearDocumento({ ...createDocumentoDto, consulta_fk: consultaId });
   }
 
-  // Ruta para descargar el PDF generado
-  @Get('pdf/:id')
-  async downloadPdf(@Param('id') id: number, @Res() res: Response) {
-    const documento = await this.documentoService.findById(id);
+  @Get('validar/:codigo')
+  async validarDocumento(@Param('codigo') codigo: string): Promise<DocumentoResponseDto> {
+    const documento = await this.documentoService.obtenerDocumento(codigo);
     if (!documento) {
-      throw new NotFoundException('Documento no encontrado');
+      throw new NotFoundException('Documento no encontrado o inválido');
     }
 
-    // Establecer las cabeceras para indicar que es un archivo PDF y forzar la descarga
-    res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="documento-${id}.pdf"`,
-    });
-    res.send(documento.pdf_firmado);
+    const resultadoFirma = await this.firmaService.verificarFirma(documento.firma?.firma_id?.toString());
+
+    if (!resultadoFirma || typeof resultadoFirma !== 'object') {
+      throw new Error('El servicio de firma debe devolver un objeto con { valido, documento }');
+    }
+
+    const { valido, documento: doc } = resultadoFirma;
+
+    return {
+      documento_id: doc.documento_id,
+      fecha_creacion: doc.fecha_creacion,
+      folio: doc.folio,
+      codigo_validacion: doc.codigo_validacion,
+      consulta_fk: doc.consulta.consulta_id,
+      firma_fk: doc.firma?.firma_id || null,
+      firma: valido ? doc.firma : null,
+    };
   }
 }
 

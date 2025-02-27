@@ -1,18 +1,15 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { DocumentoService } from './documento.service';
 import { DocumentoController } from './documento.controller';
 import { Documento } from './entities/documento.entity';
-import { Consulta } from 'src/consulta/entities/consulta.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConsultaService } from 'src/consulta/consulta.service';
-import { PacientesModule } from 'src/pacientes/pacientes.module';
-import { MedicoModule } from 'src/medico/medico.module';
-import { FirmaService } from 'src/firma/firma.service';
-import { Firma } from 'src/firma/entities/firma.entity';
+import { FirmaModule } from 'src/firma/firma.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Documento, Consulta, Firma]), PacientesModule, MedicoModule],
+  imports: [TypeOrmModule.forFeature([Documento]), forwardRef(() => FirmaModule)], // forwardRef aquí
   controllers: [DocumentoController],
-  providers: [DocumentoService, ConsultaService, FirmaService],
+  providers: [DocumentoService],
+  exports: [DocumentoService],
 })
 export class DocumentoModule { }
+
