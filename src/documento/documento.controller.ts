@@ -1,7 +1,7 @@
-import { Controller, Get, Param, Body, Post, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Param, Body, Post, NotFoundException, BadRequestException, Res } from '@nestjs/common';
 import { DocumentoService } from './documento.service';
 import { CreateDocumentoDto } from './dto/create-documento.dto';
-import { DocumentoResponseDto } from './dto/response-dto.documento';
+import { Response } from 'express';
 
 @Controller('documento')
 export class DocumentoController {
@@ -18,7 +18,7 @@ export class DocumentoController {
   }
 
   @Get('validar/:codigo')
-  async validarDocumento(@Param('codigo') codigo: string): Promise<DocumentoResponseDto> {
+  async validarDocumento(@Param('codigo') codigo: string): Promise<{ exito: boolean }> {
     console.log(`🟡 Buscando documento con código: ${codigo}`);
 
     // Obtener el documento
@@ -41,15 +41,12 @@ export class DocumentoController {
 
     console.log(`✅ Documento validado y firma verificada con éxito`, documento);
 
-    return {
-      documento_id: documento.documento_id ?? null,
-      fecha_creacion: documento.fecha_creacion ?? null,
-      folio: documento.folio ?? null,
-      codigo_validacion: documento.codigo_validacion ?? null,
-      consulta_fk: documento.consulta?.consulta_id ?? null,
-      firma_fk: documento.firma?.firma_id ?? null,
-      firma: documento.firma, // Incluye la firma validada
-    };
+    // Retornar un objeto con exito: true si la validación fue exitosa
+    return { exito: true };
+  }
+
+  @Get('pdf/:codigo')
+  async obtenerPdf(@Param('codigo') codigoValidacion: string, @Res() res: Response) {
+    await this.documentoService.generarPdf(codigoValidacion, res);
   }
 }
-

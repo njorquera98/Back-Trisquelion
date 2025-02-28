@@ -1,1 +1,5 @@
-POST http://localhost:3000/documento/pdf/1
+# Crear un documento
+#POST http://localhost:3000/documento/crear/10
+
+
+GET http://localhost:3000/documento/validar/81df7879c9f73d32r
