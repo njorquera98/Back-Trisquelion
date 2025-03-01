@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Documento } from './entities/documento.entity';
@@ -46,6 +46,28 @@ export class DocumentoService {
     return plainToInstance(Documento, documentoGuardado);
   }
 
+  async validarDocumento(codigoValidacion: string): Promise<{ exito: boolean }> {
+    console.log(`🟡 Validando documento con código: ${codigoValidacion}`);
+
+    // Buscar el documento solo una vez
+    const documento = await this.obtenerDocumento(codigoValidacion);
+    if (!documento) {
+      console.log('❌ Documento no encontrado');
+      return { exito: false };  // Retorna false si no se encuentra el documento
+    }
+
+    console.log('🔍 Documento encontrado:', documento);
+
+    // Verificar la firma pasándole el documento
+    const isFirmaValida = await this.verificarFirma(documento);
+    if (!isFirmaValida) {
+      throw new BadRequestException('Firma no válida');
+    }
+
+    console.log(`✅ Documento validado con éxito:`, documento);
+
+    return { exito: true };
+  }
 
   // Obtener documento por código de validación
   async obtenerDocumento(codigoValidacion: string): Promise<Documento | null> {
@@ -64,18 +86,9 @@ export class DocumentoService {
   }
 
 
-  // Verificar firma de un documento
-  async verificarFirma(codigoValidacion: string): Promise<boolean> {
+  // Verificar firma de un documento (Recibe el documento como argumento)
+  async verificarFirma(documento: Documento): Promise<boolean> {
     try {
-      // Obtiene el documento usando el código de validación
-      const documento = await this.obtenerDocumento(codigoValidacion);
-      console.log(documento);
-
-
-      if (!documento) {
-        throw new NotFoundException('Documento no encontrado');
-      }
-
       if (!documento.firma) {
         throw new NotFoundException('Firma no encontrada para el documento');
       }

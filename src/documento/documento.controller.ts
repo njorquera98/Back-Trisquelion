@@ -19,30 +19,7 @@ export class DocumentoController {
 
   @Get('validar/:codigo')
   async validarDocumento(@Param('codigo') codigo: string): Promise<{ exito: boolean }> {
-    console.log(`🟡 Buscando documento con código: ${codigo}`);
-
-    // Obtener el documento
-    const documento = await this.documentoService.obtenerDocumento(codigo);
-
-    if (!documento) {
-      throw new NotFoundException('Documento no encontrado');
-    }
-
-    console.log('🔍 Documento encontrado:', documento);
-
-    // Verificar la firma
-    const isFirmaValida = await this.documentoService.verificarFirma(codigo);
-
-    console.log(`🔑 Firma verificada: ${isFirmaValida ? 'Válida' : 'Inválida'}`);
-
-    if (!isFirmaValida) {
-      throw new BadRequestException('Firma no válida');
-    }
-
-    console.log(`✅ Documento validado y firma verificada con éxito`, documento);
-
-    // Retornar un objeto con exito: true si la validación fue exitosa
-    return { exito: true };
+    return this.documentoService.validarDocumento(codigo);
   }
 
   @Get('pdf/:codigo')
@@ -53,5 +30,12 @@ export class DocumentoController {
   @Get('paciente/:pacienteId')
   async obtenerDocumentos(@Param('pacienteId', ParseIntPipe) pacienteId: number) {
     return this.documentoService.obtenerDocumentosPorPaciente(pacienteId);
+  }
+
+  @Get('datos/:codigo')
+  async obtenerDatos(@Param('codigo') codigoValidacion: string) {
+    // Llamamos al servicio para obtener los datos del documento
+    const documentoData = await this.documentoService.obtenerDatosPorCodigoValidacion(codigoValidacion);
+    return { documento: documentoData };
   }
 }
