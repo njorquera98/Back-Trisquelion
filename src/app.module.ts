@@ -18,6 +18,7 @@ import { ConsultaModule } from './consulta/consulta.module';
 import { MedicoModule } from './medico/medico.module';
 import { DocumentoModule } from './documento/documento.module';
 import { FirmaModule } from './firma/firma.module';
+import { IpModule } from './ip/ip.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -54,6 +55,7 @@ import { FirmaModule } from './firma/firma.module';
     MedicoModule,
     DocumentoModule,
     FirmaModule,
+    IpModule,
   ],
   controllers: [AppController],
   providers: [AppService],
