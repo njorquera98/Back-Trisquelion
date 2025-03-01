@@ -24,7 +24,7 @@ export class DocumentoService {
     const nuevoDocumento = new Documento();
     nuevoDocumento.consulta = { consulta_id: createDocumentoDto.consulta_fk } as any;
     nuevoDocumento.fecha_creacion = new Date();
-    nuevoDocumento.folio = `FOLIO-${Date.now()}`;
+    nuevoDocumento.folio = `${Date.now()}`;
     nuevoDocumento.codigo_validacion = randomBytes(8).toString('hex');
 
     console.log('🟢 Documento creado:', nuevoDocumento);
