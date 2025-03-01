@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Body, Post, NotFoundException, BadRequestException, Res } from '@nestjs/common';
+import { Controller, Get, Param, Body, Post, NotFoundException, BadRequestException, Res, ParseIntPipe } from '@nestjs/common';
 import { DocumentoService } from './documento.service';
 import { CreateDocumentoDto } from './dto/create-documento.dto';
 import { Response } from 'express';
@@ -48,5 +48,10 @@ export class DocumentoController {
   @Get('pdf/:codigo')
   async obtenerPdf(@Param('codigo') codigoValidacion: string, @Res() res: Response) {
     await this.documentoService.generarPdf(codigoValidacion, res);
+  }
+
+  @Get('paciente/:pacienteId')
+  async obtenerDocumentos(@Param('pacienteId', ParseIntPipe) pacienteId: number) {
+    return this.documentoService.obtenerDocumentosPorPaciente(pacienteId);
   }
 }

@@ -260,5 +260,19 @@ export class DocumentoService {
     // Finalizar PDF
     doc.end();
   }
+
+  async obtenerDocumentosPorPaciente(pacienteId: number): Promise<Documento[]> {
+    return this.documentoRepository.find({
+      relations: ['consulta', 'consulta.paciente'],
+      where: { consulta: { paciente: { paciente_id: pacienteId } } },
+      select: {
+        consulta: { diagnostico: true },
+        folio: true,
+        fecha_creacion: true,
+        codigo_validacion: true
+      },
+    });
+  }
+
 }
 
