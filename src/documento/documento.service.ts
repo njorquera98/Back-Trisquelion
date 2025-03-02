@@ -21,11 +21,29 @@ export class DocumentoService {
 
   // Crear un documento
   async crearDocumento(createDocumentoDto: CreateDocumentoDto): Promise<Documento> {
+    const consultaId = createDocumentoDto.consulta_fk;
+
+    // Buscar todos los documentos activos de la consulta
+    const documentosExistentes = await this.documentoRepository.find({
+      where: { consulta: { consulta_id: consultaId }, activo: true },
+    });
+
+    if (documentosExistentes.length > 0) {
+      // Desactivar todos los documentos anteriores
+      for (const doc of documentosExistentes) {
+        doc.activo = false;
+      }
+      await this.documentoRepository.save(documentosExistentes);
+      console.log('🟡 Documentos anteriores marcados como inactivos:', documentosExistentes);
+    }
+
+    // Crear nuevo documento
     const nuevoDocumento = new Documento();
-    nuevoDocumento.consulta = { consulta_id: createDocumentoDto.consulta_fk } as any;
+    nuevoDocumento.consulta = { consulta_id: consultaId } as any;
     nuevoDocumento.fecha_creacion = new Date();
     nuevoDocumento.folio = `${Date.now()}`;
     nuevoDocumento.codigo_validacion = randomBytes(8).toString('hex');
+    nuevoDocumento.activo = true; // Nuevo documento siempre activo
 
     console.log('🟢 Documento creado:', nuevoDocumento);
 
@@ -49,14 +67,14 @@ export class DocumentoService {
   async validarDocumento(codigoValidacion: string): Promise<{ exito: boolean }> {
     console.log(`🟡 Validando documento con código: ${codigoValidacion}`);
 
-    // Buscar el documento solo una vez
+    // Buscar el documento activo
     const documento = await this.obtenerDocumento(codigoValidacion);
     if (!documento) {
-      console.log('❌ Documento no encontrado');
-      return { exito: false };  // Retorna false si no se encuentra el documento
+      console.log('❌ Documento no encontrado o no activo');
+      return { exito: false }; // Retorna false si no se encuentra o está inactivo
     }
 
-    console.log('🔍 Documento encontrado:', documento);
+    console.log('🔍 Documento activo encontrado:', documento);
 
     // Verificar la firma pasándole el documento
     const isFirmaValida = await this.verificarFirma(documento);
@@ -71,20 +89,18 @@ export class DocumentoService {
 
   // Obtener documento por código de validación
   async obtenerDocumento(codigoValidacion: string): Promise<Documento | null> {
-    console.log('🟡 Buscando documento con código:', codigoValidacion);
+    console.log('🟡 Buscando documento activo con código:', codigoValidacion);
 
-    // Realizamos la consulta en la base de datos con relaciones
+    // Buscar solo documentos activos con el código de validación
     const documento = await this.documentoRepository.findOne({
-      where: { codigo_validacion: codigoValidacion },
-      relations: ['firma', 'consulta'], // Asegúrate de que las relaciones están bien definidas
+      where: { codigo_validacion: codigoValidacion, activo: true },
+      relations: ['firma', 'consulta'],
     });
 
     console.log('🔍 Resultado de la consulta:', documento);
 
-    // Si no encontramos el documento, retornamos null
     return documento;
   }
-
 
   // Verificar firma de un documento (Recibe el documento como argumento)
   async verificarFirma(documento: Documento): Promise<boolean> {
@@ -109,7 +125,7 @@ export class DocumentoService {
 
   async obtenerDatosPorCodigoValidacion(codigoValidacion: string) {
     const documento = await this.documentoRepository.findOne({
-      where: { codigo_validacion: codigoValidacion },
+      where: { codigo_validacion: codigoValidacion, activo: true },
       relations: ['consulta', 'consulta.medico', 'consulta.paciente'], // Agregamos la relación con paciente
     });
 
@@ -258,7 +274,7 @@ export class DocumentoService {
     doc.text(`Fecha de creación: ${fechaCreacion}`, 95, 480); // Ajusta las coordenadas Y para evitar superposición
 
     // URL de validación del documento
-    const urlValidacion = `https://check.trisquelion.cl/documento/validar/${codigoValidacion}`;
+    const urlValidacion = `https://check.trisquelion.cl/documento/validar?codigo=${codigoValidacion}`;
 
     // Generar el código QR
     const qrImageBuffer = await QRCode.toBuffer(urlValidacion, {
@@ -277,7 +293,7 @@ export class DocumentoService {
   async obtenerDocumentosPorPaciente(pacienteId: number): Promise<Documento[]> {
     return this.documentoRepository.find({
       relations: ['consulta', 'consulta.paciente'],
-      where: { consulta: { paciente: { paciente_id: pacienteId } } },
+      where: { consulta: { paciente: { paciente_id: pacienteId } }, activo: true },
       select: {
         consulta: { diagnostico: true },
         folio: true,

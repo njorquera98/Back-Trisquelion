@@ -23,5 +23,9 @@ export class Documento {
 
   @Column({ unique: true })
   codigo_validacion: string;
+
+  @Column({ type: 'boolean', default: true })
+  activo: boolean;
+
 }
 
