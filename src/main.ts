@@ -8,7 +8,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const corsOptions: CorsOptions = {
-    origin: ['http://localhost:4200', 'https://atencion.trisquelion.cl'], // URL del frontend Angular
+    origin: ['http://localhost:4200', 'https://atencion.trisquelion.cl', 'https://check.trisquelion.cl'], // URL del frontend Angular
     methods: 'GET, POST, PUT, DELETE, PATCH',
     allowedHeaders: 'Content-Type, Authorization',
   };
