@@ -19,6 +19,7 @@ import { MedicoModule } from './medico/medico.module';
 import { DocumentoModule } from './documento/documento.module';
 import { FirmaModule } from './firma/firma.module';
 import { IpModule } from './ip/ip.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -56,6 +57,7 @@ import { IpModule } from './ip/ip.module';
     DocumentoModule,
     FirmaModule,
     IpModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
