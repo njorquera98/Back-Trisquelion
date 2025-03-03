@@ -159,6 +159,7 @@ export class DocumentoService {
         rut: paciente?.rut,
         fecha_nacimiento: paciente?.fecha_nacimiento,
         domicilio: paciente?.domicilio,
+        correo: paciente?.correo,
       },
     };
   }
@@ -191,103 +192,132 @@ export class DocumentoService {
     }
   }
 
-  // Función para generar el PDF y devolverlo como archivo
-  async generarPdf(codigoValidacion: string, res: Response) {
+  async generarPdf(codigoValidacion: string): Promise<Buffer> {
     const datosPdf = await this.obtenerDatosPorCodigoValidacion(codigoValidacion);
 
     if (!datosPdf) {
       throw new NotFoundException('Datos para generar el PDF no encontrados');
     }
 
-    const doc = new PDFDocument({ size: 'A5', margins: { top: 70, left: 50, right: 50, bottom: 50 } });
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="documento_${codigoValidacion}.pdf"`);
-    doc.pipe(res);
-
-    const plantillaUrl = 'https://trisquelion.cl/wp-content/uploads/2025/02/TrisquelionV1.png';
-
+    // Descargar la imagen ANTES de la promesa
+    let plantillaBuffer: Buffer;
     try {
-      const plantillaBuffer = await this.descargarImagen(plantillaUrl);
-      doc.image(plantillaBuffer, 0, 0, { fit: [420, 596] }); // Ajusta la imagen al tamaño A5
+      const plantillaUrl = 'https://trisquelion.cl/wp-content/uploads/2025/02/TrisquelionV1.png';
+      plantillaBuffer = await this.descargarImagen(plantillaUrl);
     } catch (error) {
       console.error('Error cargando la plantilla:', error);
       throw new InternalServerErrorException('Error cargando la plantilla');
     }
 
-    const paciente = datosPdf.paciente;
-    const edad = this.calcularEdad(paciente?.fecha_nacimiento);
+    return new Promise<Buffer>(async (resolve, reject) => {
+      try {
+        const doc = new PDFDocument({ size: 'A5', margins: { top: 70, left: 50, right: 50, bottom: 50 } });
+        const buffers: Buffer[] = [];
 
-    //PDF
-    doc.moveDown();
-    doc.font('assets/fonts/OpenSans-SemiBold.ttf').fontSize(8).text(`Fecha de la consulta: ${datosPdf.consulta.fecha}`, { align: 'right' });
-    doc.text(`Folio: ${datosPdf.documento.folio}`, { align: 'right' });
-    doc.moveDown();
+        doc.on('data', (chunk) => buffers.push(chunk));
+        doc.on('end', () => resolve(Buffer.concat(buffers)));
+        doc.on('error', (err) => reject(err));
 
-    // Información del médico
-    doc.fontSize(8).text(`Médico: ${datosPdf.medico.nombre} ${datosPdf.medico.apellido}`);
-    doc.text(`Especialidad: ${datosPdf.medico.especialidad}`);
-    doc.text(`RUT: ${datosPdf.medico.rut}`);
-    doc.text(`Registro SIS: ${datosPdf.medico.reg_sis}`);
-    doc.moveDown();
+        // Agregar la imagen de plantilla
+        doc.image(plantillaBuffer, 0, 0, { fit: [420, 596] });
 
-    // Información del paciente
-    doc.text(`Paciente: ${paciente?.nombre} ${paciente?.apellido}`);
-    doc.text(`RUT: ${paciente?.rut}`);
-    doc.text(`Edad: ${edad}`);
-    doc.text(`Domicilio: ${paciente?.domicilio}`);
-    doc.moveDown();
+        const paciente = datosPdf.paciente;
+        const edad = this.calcularEdad(paciente?.fecha_nacimiento);
 
-    doc.fontSize(10).text('ORDEN MÉDICA', {
-      align: 'center',
-      characterSpacing: 3,
-      oblique: true
+        //PDF
+        doc.moveDown();
+        doc.font('assets/fonts/OpenSans-SemiBold.ttf').fontSize(8).text(`Fecha de la consulta: ${datosPdf.consulta.fecha}`, { align: 'right' });
+        doc.text(`Folio: ${datosPdf.documento.folio}`, { align: 'right' });
+        doc.moveDown();
+
+        // Información del médico
+        doc.fontSize(8).text(`Médico: ${datosPdf.medico.nombre} ${datosPdf.medico.apellido}`);
+        doc.text(`Especialidad: ${datosPdf.medico.especialidad}`);
+        doc.text(`RUT: ${datosPdf.medico.rut}`);
+        doc.text(`Registro SIS: ${datosPdf.medico.reg_sis}`);
+        doc.moveDown();
+
+        // Información del paciente
+        doc.text(`Paciente: ${paciente?.nombre} ${paciente?.apellido}`);
+        doc.text(`RUT: ${paciente?.rut}`);
+        doc.text(`Edad: ${edad}`);
+        doc.text(`Domicilio: ${paciente?.domicilio}`);
+        doc.moveDown();
+
+        doc.fontSize(10).text('ORDEN MÉDICA', {
+          align: 'center',
+          characterSpacing: 3,
+          oblique: true
+        });
+        doc.moveDown();
+
+        // Información de la consulta
+        doc.fontSize(8).text(`Diagnóstico: ${datosPdf.consulta.diagnostico}`);
+
+        // Formatear la fecha de creación en español y 24hrs
+        const fechaCreacion = new Date(datosPdf.documento.fecha_creacion).toLocaleString('es-CL', {
+          year: 'numeric',
+          month: 'long',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false, // Formato 24hrs
+        });
+
+        // Fijar la información del documento en una posición específica
+        doc.font('assets/fonts/OpenSans-SemiBold.ttf')
+          .fontSize(7)
+          .text('PARA VALIDAR ESTE DOCUMENTO INGRESE A CHECK.TRISQUELION.CL E INGRESE EL CÓDIGO (MANUAL) O ESCANEAR QR (AUTOMÁTICO)', 20, 400, {
+            width: 380,
+            align: 'center'
+          });
+
+        // Texto para el código de validación y la fecha de creación
+        doc.font('assets/fonts/OpenSans-SemiBold.ttf')
+          .fontSize(7)
+          .text(`Código de validación: ${datosPdf.documento.codigo_validacion}`, 95, 465);
+        doc.text(`Fecha de creación: ${fechaCreacion}`, 95, 480);
+
+        // URL de validación del documento
+        const urlValidacion = `https://check.trisquelion.cl/documento/validar?codigo=${codigoValidacion}`;
+
+        // Generar el código QR
+        const qrImageBuffer = await QRCode.toBuffer(urlValidacion, {
+          margin: 0,
+          width: 150
+        });
+
+        // Agregar la imagen en la nueva posición
+        doc.image(qrImageBuffer, 310, 440, { width: 70, height: 70 });
+
+        // Finalizar PDF
+        doc.end();
+      } catch (err) {
+        reject(err);
+      }
     });
-    doc.moveDown();
+  }
 
-    // Información de la consulta
-    doc.fontSize(8).text(`Diagnóstico: ${datosPdf.consulta.diagnostico}`);
+  async descargarPdf(codigoValidacion: string, res: Response) {
+    try {
+      const pdfBuffer = await this.generarPdf(codigoValidacion);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="documento_${codigoValidacion}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error('Error al generar el PDF:', error);
+      throw new InternalServerErrorException('No se pudo generar el PDF');
+    }
+  }
 
-    // Formatear la fecha de creación en español y 24hrs
-    const fechaCreacion = new Date(datosPdf.documento.fecha_creacion).toLocaleString('es-CL', {
-      year: 'numeric',
-      month: 'long',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false, // Formato 24hrs
-    });
-
-    // Fijar la información del documento en una posición específica
-    doc.font('assets/fonts/OpenSans-SemiBold.ttf')
-      .fontSize(7)
-      .text('PARA VALIDAR ESTE DOCUMENTO INGRESE A CHECK.TRISQUELION.CL E INGRESE EL CÓDIGO (MANUAL) O ESCANEAR QR (AUTOMÁTICO)', 20, 400, {
-        width: 380,  // Establece el ancho máximo para el texto, puedes ajustar este valor
-        align: 'center'  // Centra el texto dentro del espacio
-      });
-
-    // Texto para el código de validación y la fecha de creación
-    doc.font('assets/fonts/OpenSans-SemiBold.ttf')
-      .fontSize(7)
-      .text(`Código de validación: ${datosPdf.documento.codigo_validacion}`, 95, 465); // Ajusta las coordenadas Y
-    doc.text(`Fecha de creación: ${fechaCreacion}`, 95, 480); // Ajusta las coordenadas Y para evitar superposición
-
-    // URL de validación del documento
-    const urlValidacion = `https://check.trisquelion.cl/documento/validar?codigo=${codigoValidacion}`;
-
-    // Generar el código QR
-    const qrImageBuffer = await QRCode.toBuffer(urlValidacion, {
-      margin: 0,  // Establece el margen en 0 para eliminar los márgenes blancos
-      width: 150  // Ajusta el tamaño del QR según lo necesites
-    });
-
-    // Agregar la imagen en la nueva posición
-    doc.image(qrImageBuffer, 310, 440, { width: 70, height: 70 });
-
-
-    // Finalizar PDF
-    doc.end();
+  async obtenerPdfBuffer(codigoValidacion: string): Promise<Buffer> {
+    try {
+      return await this.generarPdf(codigoValidacion);
+    } catch (error) {
+      console.error('Error al obtener el PDF en buffer:', error);
+      throw new InternalServerErrorException('No se pudo generar el PDF');
+    }
   }
 
   async obtenerDocumentosPorPaciente(pacienteId: number): Promise<Documento[]> {
