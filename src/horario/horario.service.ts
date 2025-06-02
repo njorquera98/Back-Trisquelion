@@ -40,52 +40,32 @@ export class HorarioService {
   }
 
   // Obtener horarios por fecha
-  async obtenerHorariosPorFecha(fechaStr: string): Promise<Horario[]> {
-    if (!fechaStr) {
-      throw new Error('La fecha es obligatoria.');
-    }
+  async obtenerHorariosSemanales(): Promise<Record<string, any[]>> {
+    const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const resultado: Record<string, any[]> = {};
 
-    // Validar formato de fecha (dd-mm-yyyy)
-    const fechaRegex = /^\d{2}-\d{2}-\d{4}$/;
-    if (!fechaRegex.test(fechaStr)) {
-      throw new Error('El formato de fecha es inválido. Debe ser dd-mm-yyyy.');
-    }
-
-    console.log(`Fecha recibida: ${fechaStr}`);
-
-    // Convertir la fecha de string a objeto Date
-    const [dia, mes, anio] = fechaStr.split('-').map(Number); // Ajustamos el orden de los valores
-    console.log(`Día: ${dia}, Mes: ${mes}, Año: ${anio}`);
-
-    // Crear la fecha (el mes en JavaScript empieza desde 0)
-    const fecha = new Date(anio, mes - 1, dia);
-    console.log(`Fecha calculada (sin UTC): ${fecha}`);
-
-    // Verificar si la fecha es válida
-    if (isNaN(fecha.getTime())) {
-      throw new Error('La fecha calculada es inválida.');
-    }
-
-    // Obtener el nombre del día de la semana
-    const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    const diaNombre = diasSemana[fecha.getDay()];
-    console.log(`Día calculado: ${diaNombre} (Valor de getDay: ${fecha.getDay()})`);
-
-    // Buscar los horarios que coincidan con el día de la semana
-    const horarios = await this.horarioRepository.find({
-      where: {
-        dia_semana: diaNombre,
-        paciente: {
-          activo: true, // Solo pacientes activos
+    for (const dia of diasSemana) {
+      const horarios = await this.horarioRepository.find({
+        where: {
+          dia_semana: dia,
+          hora: Not(IsNull()),
+          paciente: {
+            activo: true,
+          },
         },
-        hora: Not(IsNull()), // Asegura que la hora no sea null
-      },
-      relations: ['paciente'],
-    });
+        relations: ['paciente'],
+        order: {
+          hora: 'ASC', // ordenamos por hora
+        },
+      });
 
-    console.log(`Horarios encontrados:`, horarios);
+      resultado[dia] = horarios.map(h => ({
+        nombre: `${h.paciente.nombre} ${h.paciente.apellido}`,
+        hora: h.hora,
+      }));
+    }
 
-    return horarios;
+    return resultado;
   }
 
   // Obtener horarios por paciente

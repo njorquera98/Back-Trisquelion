@@ -15,9 +15,9 @@ export class HorarioController {
   }
 
   // Obtener horarios por fecha
-  @Get('fecha/:fecha')
+  @Get('fecha')
   async obtenerHorariosPorFecha(@Param('fecha') fecha: string) {
-    return await this.horarioService.obtenerHorariosPorFecha(fecha);
+    return await this.horarioService.obtenerHorariosSemanales();
   }
 
   // Obtener un horario por ID
