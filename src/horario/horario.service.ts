@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CreateHorarioDto } from './dto/create-horario.dto';
 import { UpdateHorarioDto } from './dto/update-horario.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,7 +14,6 @@ import { log } from 'node:console';
 
 @Injectable()
 export class HorarioService {
-
   constructor(
     @InjectRepository(Horario)
     private horarioRepository: Repository<Horario>,
@@ -25,7 +28,10 @@ export class HorarioService {
     });
     if (!paciente) throw new NotFoundException('Paciente no encontrado');
 
-    const horario = this.horarioRepository.create({ ...createHorarioDto, paciente });
+    const horario = this.horarioRepository.create({
+      ...createHorarioDto,
+      paciente,
+    });
     return this.horarioRepository.save(horario);
   }
 
@@ -36,12 +42,22 @@ export class HorarioService {
 
   // Obtener un horario por ID (función de ejemplo)
   findOne(id: number) {
-    return this.horarioRepository.findOne({ where: { horario_id: id }, relations: ['paciente'] });
+    return this.horarioRepository.findOne({
+      where: { horario_id: id },
+      relations: ['paciente'],
+    });
   }
 
   // Obtener horarios por fecha
   async obtenerHorariosSemanales(): Promise<Record<string, any[]>> {
-    const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const diasSemana = [
+      'Lunes',
+      'Martes',
+      'Miércoles',
+      'Jueves',
+      'Viernes',
+      'Sábado',
+    ];
     const resultado: Record<string, any[]> = {};
 
     for (const dia of diasSemana) {
@@ -59,9 +75,10 @@ export class HorarioService {
         },
       });
 
-      resultado[dia] = horarios.map(h => ({
+      resultado[dia] = horarios.map((h) => ({
         nombre: `${h.paciente.nombre} ${h.paciente.apellido}`,
         hora: h.hora,
+        pacienteId: h.paciente.paciente_id,
       }));
     }
 
@@ -79,7 +96,15 @@ export class HorarioService {
   async obtenerHorariosDeHoy(): Promise<Horario[]> {
     const fechaHoy = new Date();
     const diaSemana = fechaHoy.getDay(); // Obtiene el día de la semana (0-6)
-    const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const diasSemana = [
+      'Domingo',
+      'Lunes',
+      'Martes',
+      'Miércoles',
+      'Jueves',
+      'Viernes',
+      'Sábado',
+    ];
     const diaNombre = diasSemana[diaSemana];
 
     console.log(fechaHoy);
@@ -95,10 +120,14 @@ export class HorarioService {
     });
   }
 
-
   // Actualizar un horario
-  async update(id: number, updateHorarioDto: UpdateHorarioDto): Promise<Horario> {
-    const horario = await this.horarioRepository.findOne({ where: { horario_id: id } });
+  async update(
+    id: number,
+    updateHorarioDto: UpdateHorarioDto,
+  ): Promise<Horario> {
+    const horario = await this.horarioRepository.findOne({
+      where: { horario_id: id },
+    });
 
     if (!horario) {
       throw new NotFoundException('Horario no encontrado');
@@ -116,7 +145,9 @@ export class HorarioService {
 
   // Eliminar un horario
   async remove(id: number): Promise<void> {
-    const horario = await this.horarioRepository.findOne({ where: { horario_id: id } });
+    const horario = await this.horarioRepository.findOne({
+      where: { horario_id: id },
+    });
 
     if (!horario) {
       throw new NotFoundException('Horario no encontrado');
@@ -125,4 +156,3 @@ export class HorarioService {
     await this.horarioRepository.remove(horario);
   }
 }
-
