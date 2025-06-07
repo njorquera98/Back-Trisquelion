@@ -20,6 +20,7 @@ import { DocumentoModule } from './documento/documento.module';
 import { FirmaModule } from './firma/firma.module';
 import { IpModule } from './ip/ip.module';
 import { EmailModule } from './email/email.module';
+import { ReprogramacionModule } from './reprogramacion/reprogramacion.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -58,6 +59,7 @@ import { EmailModule } from './email/email.module';
     FirmaModule,
     IpModule,
     EmailModule,
+    ReprogramacionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

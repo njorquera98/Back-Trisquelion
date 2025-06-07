@@ -6,6 +6,7 @@ import { Evaluacion } from "src/evaluaciones/entities/evaluacion.entity";
 import { Horario } from "src/horario/entities/horario.entity";
 import { Nota } from "src/nota/entities/nota.entity";
 import { PesoMaximo } from "src/peso-maximo/entities/peso-maximo.entity";
+import { ReprogramacionSesion } from "src/reprogramacion/entities/reprogramacion.entity";
 import { Sesion } from "src/sesiones/entities/sesion.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
@@ -69,4 +70,7 @@ export class Paciente {
 
   @OneToMany(() => Consulta, (consulta) => consulta.paciente)
   consultas: Consulta[];
+
+  @OneToMany(() => ReprogramacionSesion, (reprogramacion) => reprogramacion.paciente)
+  reprogramaciones: ReprogramacionSesion[];
 }
