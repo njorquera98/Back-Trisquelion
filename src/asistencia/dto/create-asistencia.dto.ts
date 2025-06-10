@@ -1,12 +1,18 @@
-import { IsNotEmpty, IsNumber, IsBoolean } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
+import { EstadoAsistencia } from '../entities/asistencia.entity';
 
 export class CreateAsistenciaDto {
-  @IsNotEmpty()
-  @IsNumber()
-  paciente_id: number;
+  @IsDateString()
+  fecha: string;
 
-  @IsNotEmpty()
-  @IsBoolean()
-  asistencia: boolean;
+  @IsString()
+  hora_programada: string;
+
+  @IsOptional()
+  @IsEnum(EstadoAsistencia)
+  estado?: EstadoAsistencia;
+
+  @IsOptional()
+  paciente_fk: number; // solo si se quiere usar directamente
 }
 

@@ -1,50 +1,99 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Asistencia } from './entities/asistencia.entity';
+import { Repository, Between } from 'typeorm';
 import { CreateAsistenciaDto } from './dto/create-asistencia.dto';
 import { UpdateAsistenciaDto } from './dto/update-asistencia.dto';
 import { Paciente } from 'src/pacientes/entities/paciente.entity';
-import { Asistencia } from './entities/asistencia.entity';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Horario } from 'src/horario/entities/horario.entity';
+import { addDays, format } from 'date-fns';
 
 @Injectable()
 export class AsistenciaService {
-
   constructor(
-    @InjectRepository(Horario)
-    private horarioRepository: Repository<Horario>,
     @InjectRepository(Asistencia)
-    private asistenciaRepository: Repository<Asistencia>,
+    private asistenciaRepo: Repository<Asistencia>,
+
     @InjectRepository(Paciente)
-    private pacienteRepository: Repository<Paciente>,
+    private pacienteRepo: Repository<Paciente>,
   ) { }
 
-  async create(createAsistenciaDto: CreateAsistenciaDto): Promise<Asistencia> {
-    const paciente = await this.pacienteRepository.findOne({
-      where: { paciente_id: createAsistenciaDto.paciente_id },
+  async create(createDto: CreateAsistenciaDto): Promise<Asistencia> {
+    const paciente = await this.pacienteRepo.findOneBy({ paciente_id: createDto.paciente_fk });
+    const asistencia = this.asistenciaRepo.create({ ...createDto, paciente });
+    return this.asistenciaRepo.save(asistencia);
+  }
+
+  async update(id: number, updateDto: UpdateAsistenciaDto): Promise<Asistencia> {
+    await this.asistenciaRepo.update(id, updateDto);
+    return this.asistenciaRepo.findOneBy({ asistencia_id: id });
+  }
+
+  // asistencia.service.ts
+  async obtenerAsistenciasConPaciente(inicio: string, fin: string): Promise<Asistencia[]> {
+    return this.asistenciaRepo.find({
+      where: {
+        fecha: Between(inicio, fin),
+      },
+      relations: ['paciente'], // <-- Esto hace el JOIN
+      order: { fecha: 'ASC', hora_programada: 'ASC' },
     });
-    if (!paciente) throw new NotFoundException('Paciente no encontrado');
-
-    const asistencia = this.asistenciaRepository.create({ ...createAsistenciaDto, paciente });
-    return this.asistenciaRepository.save(asistencia);
   }
 
-  findAll(): Promise<Asistencia[]> {
-    return this.asistenciaRepository.find({ relations: ['paciente'] });
+
+  async generarAsistenciasSemanaDesde(inicio: string) {
+    const fechaInicio = new Date(inicio);
+    const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+    const pacientesActivos = await this.pacienteRepo.find({
+      where: { activo: true },
+      relations: ['horarios'],
+    });
+
+    const registros: Asistencia[] = [];
+
+    for (const paciente of pacientesActivos) {
+      for (const horario of paciente.horarios) {
+        const { dia_semana, hora } = horario;
+
+        if (!hora) continue; // No generar si no hay hora asignada
+
+        const diaIndex = diasSemana.indexOf(dia_semana);
+        if (diaIndex === -1) continue;
+
+        const fecha = addDays(fechaInicio, diaIndex); // Construir fecha según día de la semana
+        const fechaFormateada = format(fecha, 'yyyy-MM-dd');
+
+        const yaExiste = await this.asistenciaRepo.findOne({
+          where: {
+            paciente: { paciente_id: paciente.paciente_id },
+            fecha: fechaFormateada,
+            hora_programada: hora,
+          },
+        });
+
+        if (!yaExiste) {
+          const nuevaAsistencia = this.asistenciaRepo.create({
+            fecha: fechaFormateada,
+            hora_programada: hora,
+            estado: null,
+            paciente,
+          });
+          registros.push(nuevaAsistencia);
+        }
+      }
+    }
+
+    const guardados = await this.asistenciaRepo.save(registros);
+
+    return {
+      totalGenerados: guardados.length,
+      detalles: guardados.map((a) => ({
+        paciente: a.paciente.paciente_id,
+        fecha: a.fecha,
+        hora: a.hora_programada,
+      })),
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} asistencia`;
-  }
-
-  async update(id: number, updateAsistenciaDto: UpdateAsistenciaDto): Promise<Asistencia> {
-    await this.asistenciaRepository.update(id, updateAsistenciaDto);
-    const updatedAsistencia = await this.asistenciaRepository.findOne({ where: { asistencia_id: id } });
-    if (!updatedAsistencia) throw new NotFoundException('Asistencia no encontrada');
-    return updatedAsistencia;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} asistencia`;
-  }
 }
+

@@ -1,5 +1,2 @@
-# Crear un documento
-#POST http://localhost:3000/documento/crear/10
-
-
-GET http://localhost:3000/documento/validar/cb33dcef2a6a0c4d
+GET http://localhost:3000/asistencia/rango?inicio=2025-06-10&fin=2025-06-15
+Accept: application/json

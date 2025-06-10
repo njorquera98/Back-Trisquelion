@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Query } from '@nestjs/common';
 import { AsistenciaService } from './asistencia.service';
 import { CreateAsistenciaDto } from './dto/create-asistencia.dto';
 import { UpdateAsistenciaDto } from './dto/update-asistencia.dto';
@@ -8,27 +8,24 @@ export class AsistenciaController {
   constructor(private readonly asistenciaService: AsistenciaService) { }
 
   @Post()
-  create(@Body() createAsistenciaDto: CreateAsistenciaDto) {
-    return this.asistenciaService.create(createAsistenciaDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.asistenciaService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.asistenciaService.findOne(+id);
+  create(@Body() dto: CreateAsistenciaDto) {
+    return this.asistenciaService.create(dto);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAsistenciaDto: UpdateAsistenciaDto) {
-    return this.asistenciaService.update(+id, updateAsistenciaDto);
+  update(@Param('id') id: number, @Body() dto: UpdateAsistenciaDto) {
+    return this.asistenciaService.update(id, dto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.asistenciaService.remove(+id);
+  @Get('rango')
+  getAsistenciasRango(@Query('inicio') inicio: string, @Query('fin') fin: string) {
+    return this.asistenciaService.obtenerAsistenciasConPaciente(inicio, fin);
+  }
+
+
+  @Post('generar-semana')
+  generarAsistenciasSemana(@Body('inicio') inicio: string) {
+    return this.asistenciaService.generarAsistenciasSemanaDesde(inicio);
   }
 }
+
