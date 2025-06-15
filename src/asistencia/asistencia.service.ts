@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Asistencia } from './entities/asistencia.entity';
 import { Repository, Between } from 'typeorm';
 import { CreateAsistenciaDto } from './dto/create-asistencia.dto';
 import { UpdateAsistenciaDto } from './dto/update-asistencia.dto';
 import { Paciente } from 'src/pacientes/entities/paciente.entity';
-import { addDays, format } from 'date-fns';
+import { parseISO, getDay, startOfWeek, addDays, format } from 'date-fns';
 
 @Injectable()
 export class AsistenciaService {
@@ -39,11 +39,21 @@ export class AsistenciaService {
     });
   }
 
-
   async generarAsistenciasSemanaDesde(inicio: string) {
-    const fechaInicio = new Date(inicio);
+    // Parsear fecha de inicio
+    const fecha = parseISO(inicio);
+
+    // Validar que no sea domingo
+    if (getDay(fecha) === 0) {
+      throw new BadRequestException('La fecha de inicio no puede ser un domingo.');
+    }
+
+    // Ajustar fecha al lunes de esa semana
+    const fechaInicio = startOfWeek(fecha, { weekStartsOn: 1 });
+
     const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
+    // Obtener pacientes activos con sus horarios
     const pacientesActivos = await this.pacienteRepo.find({
       where: { activo: true },
       relations: ['horarios'],
@@ -55,14 +65,15 @@ export class AsistenciaService {
       for (const horario of paciente.horarios) {
         const { dia_semana, hora } = horario;
 
-        if (!hora) continue; // No generar si no hay hora asignada
+        if (!hora) continue; // Ignorar si no hay hora asignada
 
         const diaIndex = diasSemana.indexOf(dia_semana);
-        if (diaIndex === -1) continue;
+        if (diaIndex === -1) continue; // Ignorar días no válidos
 
-        const fecha = addDays(fechaInicio, diaIndex); // Construir fecha según día de la semana
-        const fechaFormateada = format(fecha, 'yyyy-MM-dd');
+        const fechaAsistencia = addDays(fechaInicio, diaIndex);
+        const fechaFormateada = format(fechaAsistencia, 'yyyy-MM-dd');
 
+        // Verificar si ya existe la asistencia para ese paciente, fecha y hora
         const yaExiste = await this.asistenciaRepo.findOne({
           where: {
             paciente: { paciente_id: paciente.paciente_id },
@@ -86,6 +97,8 @@ export class AsistenciaService {
     const guardados = await this.asistenciaRepo.save(registros);
 
     return {
+      semanaDesde: format(fechaInicio, 'yyyy-MM-dd'),
+      semanaHasta: format(addDays(fechaInicio, 5), 'yyyy-MM-dd'),
       totalGenerados: guardados.length,
       detalles: guardados.map((a) => ({
         paciente: a.paciente.paciente_id,
@@ -94,6 +107,5 @@ export class AsistenciaService {
       })),
     };
   }
-
 }
 
