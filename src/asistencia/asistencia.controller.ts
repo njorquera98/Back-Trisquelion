@@ -12,10 +12,15 @@ export class AsistenciaController {
     return this.asistenciaService.create(dto);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: number, @Body() dto: UpdateAsistenciaDto) {
-    return this.asistenciaService.update(id, dto);
+  // src/asistencia/asistencia.controller.ts
+  @Patch(':id/estado')
+  actualizarEstado(
+    @Param('id') id: number,
+    @Body() estadoDto: UpdateAsistenciaDto,
+  ) {
+    return this.asistenciaService.actualizarEstado(id, estadoDto);
   }
+
 
   @Get('rango')
   getAsistenciasRango(@Query('inicio') inicio: string, @Query('fin') fin: string) {

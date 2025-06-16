@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Asistencia } from './entities/asistencia.entity';
 import { Repository, Between } from 'typeorm';
@@ -19,14 +19,35 @@ export class AsistenciaService {
 
   async create(createDto: CreateAsistenciaDto): Promise<Asistencia> {
     const paciente = await this.pacienteRepo.findOneBy({ paciente_id: createDto.paciente_fk });
-    const asistencia = this.asistenciaRepo.create({ ...createDto, paciente });
+    if (!paciente) {
+      throw new Error('Paciente no encontrado');
+    }
+
+    const hora = createDto.hora_programada && createDto.hora_programada.trim() !== '' ? createDto.hora_programada : null;
+
+    const estado = createDto.estado !== undefined ? createDto.estado : null;
+
+    const asistencia = this.asistenciaRepo.create({
+      ...createDto,
+      hora_programada: hora,
+      estado,
+      paciente,
+    });
+
     return this.asistenciaRepo.save(asistencia);
   }
 
-  async update(id: number, updateDto: UpdateAsistenciaDto): Promise<Asistencia> {
-    await this.asistenciaRepo.update(id, updateDto);
-    return this.asistenciaRepo.findOneBy({ asistencia_id: id });
+  // src/asistencia/asistencia.service.ts
+  async actualizarEstado(id: number, estadoDto: UpdateAsistenciaDto) {
+    const asistencia = await this.asistenciaRepo.findOneBy({ asistencia_id: id });
+    if (!asistencia) {
+      throw new NotFoundException('Asistencia no encontrada');
+    }
+
+    asistencia.estado = estadoDto.estado;
+    return this.asistenciaRepo.save(asistencia);
   }
+
 
   // asistencia.service.ts
   async obtenerAsistenciasConPaciente(inicio: string, fin: string): Promise<Asistencia[]> {
