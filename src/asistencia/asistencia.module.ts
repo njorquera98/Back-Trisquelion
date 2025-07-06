@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Asistencia } from './entities/asistencia.entity';
 import { Paciente } from 'src/pacientes/entities/paciente.entity';
 import { Horario } from 'src/horario/entities/horario.entity';
+import { AsistenciaCronService } from './asistencia-cron.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Asistencia, Paciente, Horario])],
   controllers: [AsistenciaController],
-  providers: [AsistenciaService],
+  providers: [AsistenciaService, AsistenciaCronService],
 })
 export class AsistenciaModule { }

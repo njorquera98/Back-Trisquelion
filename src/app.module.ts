@@ -21,6 +21,7 @@ import { FirmaModule } from './firma/firma.module';
 import { IpModule } from './ip/ip.module';
 import { EmailModule } from './email/email.module';
 import { ReprogramacionModule } from './reprogramacion/reprogramacion.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -60,6 +61,7 @@ import { ReprogramacionModule } from './reprogramacion/reprogramacion.module';
     IpModule,
     EmailModule,
     ReprogramacionModule,
+  ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

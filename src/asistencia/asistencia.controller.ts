@@ -27,7 +27,6 @@ export class AsistenciaController {
     return this.asistenciaService.obtenerAsistenciasConPaciente(inicio, fin);
   }
 
-
   @Post('generar-semana')
   generarAsistenciasSemana(@Body('inicio') inicio: string) {
     return this.asistenciaService.generarAsistenciasSemanaDesde(inicio);

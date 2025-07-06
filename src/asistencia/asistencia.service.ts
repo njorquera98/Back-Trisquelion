@@ -60,21 +60,17 @@ export class AsistenciaService {
     });
   }
 
-  async generarAsistenciasSemanaDesde(inicio: string) {
-    // Parsear fecha de inicio
-    const fecha = parseISO(inicio);
+  async generarAsistenciasSemanaDesde(inicio?: string) {
+    const fecha = inicio ? parseISO(inicio) : new Date();
 
-    // Validar que no sea domingo
+    // Si es domingo, avanzar al lunes
     if (getDay(fecha) === 0) {
-      throw new BadRequestException('La fecha de inicio no puede ser un domingo.');
+      fecha.setDate(fecha.getDate() + 1);
     }
 
-    // Ajustar fecha al lunes de esa semana
     const fechaInicio = startOfWeek(fecha, { weekStartsOn: 1 });
-
     const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-    // Obtener pacientes activos con sus horarios
     const pacientesActivos = await this.pacienteRepo.find({
       where: { activo: true },
       relations: ['horarios'],
@@ -85,16 +81,14 @@ export class AsistenciaService {
     for (const paciente of pacientesActivos) {
       for (const horario of paciente.horarios) {
         const { dia_semana, hora } = horario;
-
-        if (!hora) continue; // Ignorar si no hay hora asignada
+        if (!hora) continue;
 
         const diaIndex = diasSemana.indexOf(dia_semana);
-        if (diaIndex === -1) continue; // Ignorar días no válidos
+        if (diaIndex === -1) continue;
 
         const fechaAsistencia = addDays(fechaInicio, diaIndex);
         const fechaFormateada = format(fechaAsistencia, 'yyyy-MM-dd');
 
-        // Verificar si ya existe la asistencia para ese paciente, fecha y hora
         const yaExiste = await this.asistenciaRepo.findOne({
           where: {
             paciente: { paciente_id: paciente.paciente_id },
