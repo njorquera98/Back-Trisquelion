@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { Bono } from './entities/bono.entity';
 import { CreateBonoDto } from './dto/create-bono.dto';
 import { Paciente } from 'src/pacientes/entities/paciente.entity';
@@ -71,6 +71,26 @@ export class BonosService {
 
     await this.bonoRepository.remove(bono);
     return `Bono con id ${bonoId} eliminado correctamente`;
+  }
+
+  async obtenerBonosPorMesAnio(mes?: number, anio?: number): Promise<Bono[]> {
+    const ahora = new Date();
+
+    const mesActual = mes ?? ahora.getMonth() + 1;
+    const anioActual = anio ?? ahora.getFullYear();
+
+    const mesStr = mesActual.toString().padStart(2, '0');
+    const fechaInicio = `${anioActual}-${mesStr}-01`;
+
+    // Obtener el último día del mes
+    const ultimoDia = new Date(anioActual, mesActual, 0).getDate();
+    const fechaFin = `${anioActual}-${mesStr}-${ultimoDia.toString().padStart(2, '0')}`;
+
+    return this.bonoRepository.find({
+      where: {
+        fecha: Between(fechaInicio, fechaFin),
+      },
+    });
   }
 }
 

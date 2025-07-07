@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Query, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
 import { BonosService } from './bonos.service';
 import { CreateBonoDto } from './dto/create-bono.dto';
 import { Bono } from './entities/bono.entity';
@@ -15,6 +15,16 @@ export class BonosController {
   @Get()
   async findAll(): Promise<Bono[]> {
     return this.bonosService.findAll();
+  }
+
+  @Get('por-mes')
+  obtenerBonosPorMes(
+    @Query('mes') mes?: string,
+    @Query('anio') anio?: string,
+  ): Promise<Bono[]> {
+    const mesNum = mes ? parseInt(mes) : undefined;
+    const anioNum = anio ? parseInt(anio) : undefined;
+    return this.bonosService.obtenerBonosPorMesAnio(mesNum, anioNum);
   }
 
   @Get(':id')

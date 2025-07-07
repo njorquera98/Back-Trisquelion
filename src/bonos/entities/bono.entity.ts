@@ -20,6 +20,9 @@ export class Bono {
   @Column()
   sesionesDisponibles: number;
 
+  @Column({ type: 'date' })
+  fecha: string;
+
   @ManyToOne(() => Paciente, paciente => paciente.bonos, { eager: true })
   @JoinColumn({ name: 'paciente_fk' })
   paciente: Paciente;
