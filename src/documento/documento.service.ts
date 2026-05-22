@@ -202,7 +202,7 @@ export class DocumentoService {
     // Descargar la imagen ANTES de la promesa
     let plantillaBuffer: Buffer;
     try {
-      const plantillaUrl = 'https://trisquelion.cl/wp-content/uploads/2025/02/TrisquelionV1.png';
+      const plantillaUrl = 'https://trisquelion.cl/wp-content/uploads/2026/05/Receta-Trisquelion-Web.png';
       plantillaBuffer = await this.descargarImagen(plantillaUrl);
     } catch (error) {
       console.error('Error cargando la plantilla:', error);
@@ -231,7 +231,7 @@ export class DocumentoService {
         doc.moveDown();
 
         // Información del médico
-        doc.fontSize(8).text(`Médico: ${datosPdf.medico.nombre} ${datosPdf.medico.apellido}`);
+        doc.fontSize(8).text(`Profesional: ${datosPdf.medico.nombre} ${datosPdf.medico.apellido}`);
         doc.text(`Especialidad: ${datosPdf.medico.especialidad}`);
         doc.text(`RUT: ${datosPdf.medico.rut}`);
         doc.text(`Registro SIS: ${datosPdf.medico.reg_sis}`);
@@ -255,6 +255,7 @@ export class DocumentoService {
         doc.fontSize(8).text(`Diagnóstico: ${datosPdf.consulta.diagnostico}`);
 
         // Formatear la fecha de creación en español y 24hrs
+        /* 
         const fechaCreacion = new Date(datosPdf.documento.fecha_creacion).toLocaleString('es-CL', {
           year: 'numeric',
           month: 'long',
@@ -264,7 +265,7 @@ export class DocumentoService {
           second: '2-digit',
           hour12: false, // Formato 24hrs
         });
-
+        */
         // Fijar la información del documento en una posición específica
         doc.font('assets/fonts/OpenSans-SemiBold.ttf')
           .fontSize(7)
@@ -277,7 +278,7 @@ export class DocumentoService {
         doc.font('assets/fonts/OpenSans-SemiBold.ttf')
           .fontSize(7)
           .text(`Código de validación: ${datosPdf.documento.codigo_validacion}`, 95, 465);
-        doc.text(`Fecha de creación: ${fechaCreacion}`, 95, 480);
+        //doc.text(`Fecha de creación: ${fechaCreacion}`, 95, 480);
 
         // URL de validación del documento
         const urlValidacion = `https://check.trisquelion.cl/documento/validar?codigo=${codigoValidacion}`;
